@@ -1,0 +1,24 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration {
+    public function up(): void {
+        Schema::create('wod_ejercicio', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('wod_id')->constrained('wods')->onDelete('cascade');
+            $table->foreignId('ejercicio_id')->constrained('ejercicios')->onDelete('cascade');
+            $table->integer('orden')->default(1);
+            $table->integer('series')->nullable();
+            $table->integer('repeticiones')->nullable();
+            $table->integer('duracion')->nullable();
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void {
+        Schema::dropIfExists('wod_ejercicio');
+    }
+};
