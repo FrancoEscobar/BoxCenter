@@ -20,7 +20,7 @@ class RoleMiddleware
     {
         $user = auth()->user();
 
-        if (!$user || $user->role->name !== $role) {
+        if (!$user || $user->role->nombre !== $role) {
             abort(403, 'No tenés permiso para acceder a esta sección.');
         }
 

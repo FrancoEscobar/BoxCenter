@@ -19,9 +19,30 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'apellido',
         'email',
         'password',
+        'dni',
+        'telefono',
+        'fecha_nacimiento',
+        'rol_id',
     ];
+
+    public function role()
+    {
+        return $this->belongsTo(Role::class, 'rol_id');
+    }
+
+    public function redirectToDashboard(): string
+    {
+        $this->load('role');
+        return match($this->role->nombre ?? '') {
+            'admin' => route('admin.dashboard'),
+            'coach' => route('coach.dashboard'),
+            'atleta' => route('athlete.dashboard'),
+            default => route('home'),
+        };
+    }
 
     /**
      * The attributes that should be hidden for serialization.

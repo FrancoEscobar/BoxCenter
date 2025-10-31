@@ -25,7 +25,7 @@ class UserSeeder extends Seeder
             'dni'      => '12345678',
             'telefono'  => '3704123456',
             'fecha_nacimiento' => '2003-08-14',
-            'password' => Hash::make('admin123')
+            'password' => Hash::make('password')
         ]);
 
         // Coach
@@ -37,7 +37,7 @@ class UserSeeder extends Seeder
             'dni'      => '87654321',
             'telefono'  => '3704123456',
             'fecha_nacimiento' => '2000-05-20',
-            'password' => Hash::make('coach123')
+            'password' => Hash::make('password')
         ]);
 
         // Atleta
@@ -49,7 +49,7 @@ class UserSeeder extends Seeder
             'dni'      => '56781234',
             'telefono'  => '3704123456',
             'fecha_nacimiento' => '2003-08-14',
-            'password' => Hash::make('atleta123')
+            'password' => Hash::make('password')
         ]);
     }
 }

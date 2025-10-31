@@ -5,7 +5,7 @@ use App\Http\Controllers\Coach\DashboardController;
 use App\Http\Controllers\Coach\ClassController;
 use App\Http\Controllers\Coach\WodController;
 
-Route::middleware(['auth', 'verified'])
+Route::middleware(['auth', 'verified', 'role:coach'])
     ->prefix('coach')
     ->name('coach.')
     ->group(function () {
