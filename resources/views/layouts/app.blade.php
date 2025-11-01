@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'BoxCenter')</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @livewireStyles
 </head>
+@livewireScripts
 <body class="bg-light">
 
     <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm px-4">
