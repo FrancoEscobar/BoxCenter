@@ -32,10 +32,6 @@ if [ ! -d "node_modules" ]; then
   npm install
 fi
 
-# # Iniciar Vite en segundo plano en todas las interfaces
-# echo "💡 Iniciando servidor de Vite (desarrollo)..."
-# npm run dev
-
 # Iniciar Nginx y PHP-FPM con Supervisor
 echo "🚀 Iniciando Nginx y PHP-FPM..."
 exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
