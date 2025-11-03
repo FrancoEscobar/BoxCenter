@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
+use App\Http\Livewire\MembershipSelector;
 
 Route::get('/', function () {
     return view('welcome');
@@ -37,3 +38,9 @@ Route::middleware(['auth'])->group(function () {
 Route::get('/home', function () {
     return view('welcome');
 })->name('home');
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/membresias', function () {
+        return view('athlete.memberships');
+    })->name('athlete.memberships');
+});
