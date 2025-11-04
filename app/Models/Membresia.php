@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Membresia extends Model
 {
     use HasFactory;
-
+    
     protected $fillable = [
         'usuario_id',
         'tipo_entrenamiento_id',
