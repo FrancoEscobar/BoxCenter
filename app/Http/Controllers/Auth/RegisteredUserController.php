@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Role;
+use App\Models\Membresia;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -56,7 +57,27 @@ class RegisteredUserController extends Controller
         event(new Registered($user));
 
         Auth::login($user);
+        $request->session()->regenerate();
 
-        return redirect($user->redirectToDashboard());
+        // Verificar si por alguna razón ya existe una membresía asociada al usuario
+        $membresiaExistente = Membresia::where('usuario_id', $user->id)
+            ->whereIn('estado', ['pendiente', 'activa'])
+            ->first();  
+
+        // Caso raro: si existe una membresía pendiente, redirigir al pago; si está activa, al dashboard
+        if ($membresiaExistente) {
+            return match($membresiaExistente->estado) {
+                'pendiente' => redirect()->route('athlete.payment')
+                    ->with('info', 'Se encontró una membresía pendiente. Podés continuar con el pago.')
+                    ->with('membresia_id', $membresiaExistente->id),
+                'activa' => redirect()->route('athlete.dashboard'),
+                default => redirect()->route('athlete.planselection')
+                    ->with('success', 'Registro completado. Seleccioná tu plan para continuar.')
+            };
+        }
+
+        // Si todo OK, redirigir al selector de plan
+        return redirect()->route('athlete.planselection')
+            ->with('success', 'Registro completado. Seleccioná tu plan para continuar.');
     }
 }

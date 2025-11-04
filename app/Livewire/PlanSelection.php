@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Auth;
 // - Mostrar un resumen de la selección antes del pago.
 // - Comunicar cambios a la vista en tiempo real.
 
-class MembershipSelector extends Component
+class PlanSelection extends Component
 {
     
     public $tipos_entrenamiento = [];
@@ -55,7 +55,7 @@ class MembershipSelector extends Component
     // Devuelve la vista del componente.
     public function render()
     {
-        return view('livewire.membership-selector');
+        return view('livewire.plan-selection');
     }
 
     public function continuarAlPago()
@@ -79,6 +79,11 @@ class MembershipSelector extends Component
         // Si tiene una membresía activa, no permitir crear ni modificar
         if ($membresiaExistente && $membresiaExistente->estado === 'activa') {
             session()->flash('error', 'Ya tienes una membresía activa. No puedes crear otra.');
+            return;
+        }
+
+        if (!$this->entrenamientoSeleccionado || !$this->planSeleccionado) {
+            session()->flash('error', 'Selección inválida.');
             return;
         }
 

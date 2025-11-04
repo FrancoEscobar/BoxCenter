@@ -2,6 +2,6 @@
 
 @section('content')
 <div class="container py-5">
-    @livewire('membership-selector')
+    @livewire('plan-selection')
 </div>
 @endsection

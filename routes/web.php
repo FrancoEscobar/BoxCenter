@@ -40,7 +40,7 @@ Route::get('/home', function () {
 })->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/membresias', function () {
-        return view('athlete.memberships');
-    })->name('athlete.memberships');
+    Route::get('/seleccion-plan', function () {
+        return view('athlete.planselection');
+    })->name('athlete.planselection');
 });

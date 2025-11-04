@@ -1,5 +1,5 @@
 <div class="container my-5">
-    <h2 class="mb-4 text-center">Selecciona tu Membresía</h2>
+    <h2 class="mb-4 text-center">Selecciona tu Plan</h2>
 
     @if (session()->has('error'))
         <div class="alert alert-danger text-center">

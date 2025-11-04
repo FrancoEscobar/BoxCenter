@@ -12,6 +12,8 @@ Route::middleware(['auth', 'verified', 'role:atleta'])
     ->group(function () {
         Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
         Route::resource('classes', ClassController::class);
-        Route::resource('memberships', MembershipController::class);
-       Route::get('/payment', [PaymentController::class, 'index'])->name('payment');
+        Route::get('/planselection', function () {
+            return view('athlete.planselection');
+        })->name('planselection');
+        Route::get('/payment', [PaymentController::class, 'index'])->name('payment');
     });

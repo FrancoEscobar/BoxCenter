@@ -13,7 +13,7 @@
 
         <div class="text-center mt-4">
             <a href="#" class="btn btn-success btn-lg">Pagar ahora</a>
-            <a href="{{ route('athlete.memberships') }}" class="btn btn-secondary btn-lg">Volver</a>
+            <a href="{{ route('athlete.planselection') }}" class="btn btn-secondary btn-lg">Volver</a>
         </div>
     </div>
 </div>
