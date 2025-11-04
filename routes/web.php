@@ -38,9 +38,3 @@ Route::middleware(['auth'])->group(function () {
 Route::get('/home', function () {
     return view('welcome');
 })->name('home');
-
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/seleccion-plan', function () {
-        return view('athlete.planselection');
-    })->name('athlete.planselection');
-});

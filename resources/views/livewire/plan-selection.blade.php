@@ -1,5 +1,5 @@
 <div class="container my-5">
-    <h2 class="mb-4 text-center">Selecciona tu Plan</h2>
+    <h2 class="mb-4 text-center">Selecciona tu plan</h2>
 
     @if (session()->has('error'))
         <div class="alert alert-danger text-center">
@@ -14,10 +14,14 @@
                 <h4 class="text-center mb-3">Entrenamientos</h4>
                 <div class="list-group">
                     @foreach ($tipos_entrenamiento as $entrenamiento)
-                        <button wire:click="seleccionarEntrenamiento({{ $entrenamiento->id }})"
+                        <button 
+                            wire:click="seleccionarEntrenamiento({{ $entrenamiento->id }})"
                             class="list-group-item list-group-item-action 
                             {{ $entrenamientoSeleccionado && $entrenamientoSeleccionado->id == $entrenamiento->id ? 'active' : '' }}">
-                            {{ $entrenamiento->nombre }}
+                            <div class="d-flex flex-column text-start">
+                                <strong>{{ $entrenamiento->nombre }}</strong>
+                                <small class="text-muted">{{ $entrenamiento->descripcion }}</small>
+                            </div>
                         </button>
                     @endforeach
                 </div>
@@ -30,10 +34,15 @@
                 <h4 class="text-center mb-3">Planes</h4>
                 <div class="list-group">
                     @foreach ($planes as $plan)
-                        <button wire:click="seleccionarPlan({{ $plan->id }})"
+                        <button 
+                            wire:click="seleccionarPlan({{ $plan->id }})"
                             class="list-group-item list-group-item-action 
                             {{ $planSeleccionado && $planSeleccionado->id == $plan->id ? 'active' : '' }}">
-                            {{ $plan->nombre }} — ${{ number_format($plan->precio, 2) }}
+                            <div class="d-flex flex-column text-start">
+                                <strong>{{ $plan->nombre }}</strong>
+                                <small class="text-muted">{{ $plan->descripcion }}</small>
+                                <span class="fw-bold mt-1">${{ number_format($plan->precio, 2) }}</span>
+                            </div>
                         </button>
                     @endforeach
                 </div>
@@ -44,7 +53,7 @@
     <!-- Botón para mostrar el resumen -->
     <div class="text-center mt-4">
         <button wire:click="verResumen" class="btn btn-primary btn-lg">
-            Ver resumen y continuar
+            Continuar
         </button>
     </div>
 
@@ -59,7 +68,9 @@
                     </div>
                     <div class="modal-body">
                         <p><strong>Entrenamiento:</strong> {{ $entrenamientoSeleccionado->nombre }}</p>
+                        <p>{{ $entrenamientoSeleccionado->descripcion }}</p>
                         <p><strong>Plan:</strong> {{ $planSeleccionado->nombre }}</p>
+                        <p>{{ $planSeleccionado->descripcion }}</p>
                         <p><strong>Precio:</strong> ${{ number_format($planSeleccionado->precio, 2) }}</p>
                     </div>
                     <div class="modal-footer">
