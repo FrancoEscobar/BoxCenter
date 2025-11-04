@@ -5,6 +5,8 @@ namespace App\Livewire;
 use Livewire\Component;
 use App\Models\TipoEntrenamiento;
 use App\Models\Plan;
+use App\Models\Membresia;
+use Illuminate\Support\Facades\Auth;
 
 // Este componente se encarga de:
 // - Cargar los tipos de entrenamiento (CrossFit, Funcional, etc.) y los planes (mensual, semanal, etc.).
@@ -54,5 +56,58 @@ class MembershipSelector extends Component
     public function render()
     {
         return view('livewire.membership-selector');
+    }
+
+    public function continuarAlPago()
+    {
+        if (!Auth::check()) {
+            return redirect()->route('login');
+        }
+
+        if (!$this->entrenamientoSeleccionado || !$this->planSeleccionado) {
+            session()->flash('error', 'Debes seleccionar un tipo de entrenamiento y un plan.');
+            return;
+        }
+
+        $usuario = Auth::user();
+
+        // Buscar si el usuario ya tiene una membresía activa o pendiente
+        $membresiaExistente = Membresia::where('usuario_id', $usuario->id)
+            ->whereIn('estado', ['activa', 'pendiente'])
+            ->first();
+
+        // Si tiene una membresía activa, no permitir crear ni modificar
+        if ($membresiaExistente && $membresiaExistente->estado === 'activa') {
+            session()->flash('error', 'Ya tienes una membresía activa. No puedes crear otra.');
+            return;
+        }
+
+        // Si tiene una pendiente se actualiza con la nueva selección
+        if ($membresiaExistente && $membresiaExistente->estado === 'pendiente') {
+            $membresiaExistente->update([
+                'tipo_entrenamiento_id' => $this->entrenamientoSeleccionado->id,
+                'plan_id' => $this->planSeleccionado->id,
+                'importe' => $this->planSeleccionado->precio,
+                'updated_at' => now(),
+            ]);
+
+            session()->flash('success', 'Tu membresía pendiente fue actualizada correctamente.');
+            return redirect()->route('athlete.payment');
+        }
+
+        // Si no existe ninguna membresía activa o pendiente se crea una nueva
+        $membresia = Membresia::create([
+            'usuario_id' => $usuario->id,
+            'tipo_entrenamiento_id' => $this->entrenamientoSeleccionado->id,
+            'plan_id' => $this->planSeleccionado->id,
+            'estado' => 'pendiente',
+            'importe' => $this->planSeleccionado->precio,
+        ]);
+
+        // Guardar el ID en sesión para usarlo en el módulo de pago
+        session(['membresia_id' => $membresia->id]);
+
+        // Redirigir al módulo de pago
+        return redirect()->route('athlete.payment');
     }
 }

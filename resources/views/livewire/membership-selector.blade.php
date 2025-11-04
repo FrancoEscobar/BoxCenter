@@ -64,7 +64,9 @@
                     </div>
                     <div class="modal-footer">
                         <button wire:click="$set('mostrarResumen', false)" class="btn btn-secondary">Volver</button>
-                        <button class="btn btn-success">Continuar al pago</button>
+                        <button wire:click="continuarAlPago" class="btn btn-success">
+                            Continuar al pago
+                        </button>
                     </div>
                 </div>
             </div>
