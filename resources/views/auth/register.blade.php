@@ -2,11 +2,39 @@
     <form method="POST" action="{{ route('register') }}">
         @csrf
 
-        <!-- Name -->
+        <!-- Nombre -->
         <div>
-            <x-input-label for="name" :value="__('Name')" />
+            <x-input-label for="name" :value="__('Nombre')" />
             <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" :value="old('name')" required autofocus autocomplete="name" />
             <x-input-error :messages="$errors->get('name')" class="mt-2" />
+        </div>
+
+        <!-- Apellido -->
+        <div class="mt-4">
+            <x-input-label for="apellido" :value="__('Apellido')" />
+            <x-text-input id="apellido" class="block mt-1 w-full" type="text" name="apellido" value="{{ old('apellido') }}" autocomplete="family-name" />
+            <x-input-error :messages="$errors->get('apellido')" class="mt-2" />
+        </div>
+
+        <!-- DNI -->
+        <div class="mt-4">
+            <x-input-label for="dni" :value="__('DNI')" />
+            <x-text-input id="dni" class="block mt-1 w-full" type="text" name="dni" value="{{ old('dni') }}" autocomplete="off" />
+            <x-input-error :messages="$errors->get('dni')" class="mt-2" />
+        </div>
+
+        <!-- Teléfono -->
+        <div class="mt-4">
+            <x-input-label for="telefono" :value="__('Teléfono')" />
+            <x-text-input id="telefono" class="block mt-1 w-full" type="text" name="telefono" value="{{ old('telefono') }}" autocomplete="tel" />
+            <x-input-error :messages="$errors->get('telefono')" class="mt-2" />
+        </div>
+
+        <!-- Fecha de nacimiento -->
+        <div class="mt-4">
+            <x-input-label for="fecha_nacimiento" :value="__('Fecha de nacimiento')" />
+            <x-text-input id="fecha_nacimiento" class="block mt-1 w-full" type="date" name="fecha_nacimiento" value="{{ old('fecha_nacimiento') }}" />
+            <x-input-error :messages="$errors->get('fecha_nacimiento')" class="mt-2" />
         </div>
 
         <!-- Email Address -->
@@ -18,7 +46,7 @@
 
         <!-- Password -->
         <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
+            <x-input-label for="password" :value="__('Contraseña')" />
 
             <x-text-input id="password" class="block mt-1 w-full"
                             type="password"
@@ -30,7 +58,7 @@
 
         <!-- Confirm Password -->
         <div class="mt-4">
-            <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
+            <x-input-label for="password_confirmation" :value="__('Confirmar contraseña')" />
 
             <x-text-input id="password_confirmation" class="block mt-1 w-full"
                             type="password"
@@ -41,11 +69,11 @@
 
         <div class="flex items-center justify-end mt-4">
             <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('login') }}">
-                {{ __('Already registered?') }}
+                {{ __('¿Ya estás registrado?') }}
             </a>
 
             <x-primary-button class="ms-4">
-                {{ __('Register') }}
+                {{ __('Registrarse') }}
             </x-primary-button>
         </div>
     </form>
