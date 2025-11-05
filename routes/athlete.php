@@ -11,10 +11,13 @@ Route::middleware(['auth', 'verified', 'role:atleta'])
     ->name('athlete.')
     ->group(function () {
 
-        Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+        // Rutas protegidas por la verificación de membresía activa
+        Route::middleware(['active.membership'])->group(function () {
+            Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+            Route::resource('classes', ClassController::class);
+        });
 
-        Route::resource('classes', ClassController::class);
-
+        // Rutas accesibles sin membresía activa
         Route::get('/planselection', function () {
             return view('athlete.planselection');
         })->name('planselection');
