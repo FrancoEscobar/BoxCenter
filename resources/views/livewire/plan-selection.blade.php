@@ -1,6 +1,11 @@
 <div class="container my-5">
     <h2 class="mb-4 text-center">Selecciona tu plan</h2>
 
+    <p class="text-center text-muted mb-5">
+        Bienvenido/a a <strong>BoxCenter</strong>. Elegí el tipo de entrenamiento y el plan que mejor se adapten a tus objetivos.
+        Recordá que podrás modificar tu membresía en cualquier momento desde tu panel de usuario.
+    </p>
+
     @if (session()->has('error'))
         <div class="alert alert-danger text-center">
             {{ session('error') }}
