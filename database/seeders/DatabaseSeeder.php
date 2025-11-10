@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             TipoEntrenamientoSeeder::class,
             PlanSeeder::class,
+            MetodosPagoSeeder::class,
         ]);
     }
 }

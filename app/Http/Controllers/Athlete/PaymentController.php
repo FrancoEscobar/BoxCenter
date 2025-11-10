@@ -9,10 +9,12 @@ use App\Services\PaymentGateway\MercadoPagoService;
 class PaymentController extends Controller
 {
     protected $membershipService;
+    protected $paymentGateway;
 
-    public function __construct(MembershipService $membershipService)
+    public function __construct(MembershipService $membershipService, MercadoPagoService $paymentGateway)
     {
         $this->membershipService = $membershipService;
+        $this->paymentGateway = $paymentGateway;
     }
 
     public function index()
@@ -47,6 +49,7 @@ class PaymentController extends Controller
                     "unit_price" => round($membresia->plan->precio, 2),
                 ],
             ],
+            "external_reference" => $membresia->id,
             "back_urls" => [
                 "success" => config('app.url') . "/athlete/payment/success",
                 "failure" => config('app.url') . "/athlete/payment/failure",
@@ -58,12 +61,48 @@ class PaymentController extends Controller
 
         // Crear preferencia y redirigir
         try {
-            $checkoutUrl = $paymentGateway->createPreference($preferenceData);
+            $checkoutUrl = $this->paymentGateway->createPreference($preferenceData);
             return redirect($checkoutUrl);
         } catch (\MercadoPago\Exceptions\MPApiException $e) {
-            dd($e->getApiResponse()); // muestra la respuesta completa de Mercado Pago
-        } catch (\Exception $e) {
-            dd($e->getMessage());
+            \Log::error('Error al crear preferencia', ['error' => $e->getMessage()]);
+            return redirect()->route('athlete.planselection')
+                ->with('error', 'Ocurrió un error al procesar el pago.');
         }
     }
+
+    public function status($payment_id)
+    {
+        $pago = \App\Models\Pago::where('payment_id', $payment_id)->first();
+
+        if (!$pago) {
+            return response()->json(['status' => 'not_found'], 404);
+        }
+
+        return response()->json(['status' => $pago->status]);
+    }
+
+    public function success()
+    {
+        return view('athlete.payment.success');
+    }
+
+    public function failure()
+    {
+        return view('athlete.payment.failure');
+    }
+
+    public function pending()
+    {
+        $membresiaId = Session::get('membresia_id');
+        $pago = \App\Models\Pago::where('membresia_id', $membresiaId)->latest()->first();
+
+        if (!$pago) {
+            return redirect()->route('athlete.planselection')
+                ->with('error', 'No se encontró información del pago.');
+        }
+
+        return view('athlete.payment.pending', [
+            'payment_id' => $pago->payment_id
+        ]);
+    } 
 }

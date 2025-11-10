@@ -11,37 +11,20 @@ class MetodosPagoSeeder extends Seeder
     {
         DB::table('metodos_pago')->insert([
             [
-                'nombre' => 'Efectivo',
-                'descripcion' => 'Pago en efectivo al momento en el box.',
-                'estado' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'nombre' => 'Transferencia bancaria',
-                'descripcion' => 'Transferencia directa a la cuenta del box.',
-                'estado' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'nombre' => 'Tarjeta de crédito',
-                'descripcion' => 'Pago mediante tarjeta de crédito.',
-                'estado' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'nombre' => 'Tarjeta de débito',
-                'descripcion' => 'Pago mediante tarjeta de débito.',
-                'estado' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
                 'nombre' => 'Mercado Pago',
-                'descripcion' => 'Pago digital a través de la plataforma Mercado Pago.',
-                'estado' => true,
+                'descripcion' => 'Pagos realizados a través de la plataforma Mercado Pago',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'nombre' => 'Efectivo',
+                'descripcion' => 'Pago realizado en efectivo en el box',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'nombre' => 'Transferencia',
+                'descripcion' => 'Pago realizado mediante transferencia bancaria',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],

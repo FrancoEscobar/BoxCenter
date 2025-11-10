@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => \App\Http\Middleware\RoleMiddleware::class,
             'active.membership' => \App\Http\Middleware\CheckActiveMembership::class,
+            'web' => \App\Http\Middleware\VerifyCsrfToken::class,   
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
