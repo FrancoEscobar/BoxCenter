@@ -107,10 +107,7 @@ class PaymentController extends Controller
         } else {
             \Log::info("No se encontró pago desde {$source}, la membresía será cancelada", [
                 'membresia_id' => $membresia?->id
-            ]);
-            if ($membresia) {
-                $membresia->update(['estado' => 'pago_cancelado']);
-            }
+            ]); 
         }
     }
 

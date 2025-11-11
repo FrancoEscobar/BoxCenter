@@ -28,16 +28,22 @@ class MembershipService
         \Log::info('Activando membresía', ['id' => $membershipId]);
 
         $membership = Membresia::find($membershipId);
-        
+
         if (!$membership) {
             \Log::warning('Membresía no encontrada', ['id' => $membershipId]);
             return;
         }
 
-        $membership->estado = 'activa';
-        $membership->fecha_inicio = now()->toDateString();
-        $membership->fecha_vencimiento = now()->addMonth()->toDateString();
-        $membership->save();
+        $plan = $membership->plan;
+
+        $fechaInicio = now();
+        $fechaVencimiento = $fechaInicio->copy()->addDays($plan->duracion);
+
+        $membership->update([
+            'estado' => 'activa',
+            'fecha_inicio' => $fechaInicio->toDateString(),
+            'fecha_vencimiento' => $fechaVencimiento->toDateString(),
+        ]);
 
         \Log::info('Membresía activada', ['membership' => $membership->toArray()]);
     }
