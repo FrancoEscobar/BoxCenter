@@ -81,28 +81,73 @@ class PaymentController extends Controller
         return response()->json(['status' => $pago->status]);
     }
 
-    public function success()
+    private function getPaymentForSession()
     {
-        return view('athlete.payment.success');
+        $membresiaId = Session::get('membresia_id');
+
+        $pago = \App\Models\Pago::where('membresia_id', $membresiaId)
+            ->latest()
+            ->first();
+
+        if (!$pago) {
+            return null;
+        }
+
+        return $pago;
     }
 
-    public function failure()
+    private function logPaymentState(?\App\Models\Pago $pago, ?\App\Models\Membresia $membresia, string $source)
     {
-        return view('athlete.payment.failure');
+        if ($pago) {
+            \Log::info("Estado de pago desde {$source}", [
+                'payment_id' => $pago->payment_id,
+                'status' => $pago->status,
+                'membresia_id' => $membresia?->id
+            ]);
+        } else {
+            \Log::info("No se encontró pago desde {$source}, la membresía será cancelada", [
+                'membresia_id' => $membresia?->id
+            ]);
+            if ($membresia) {
+                $membresia->update(['estado' => 'pago_cancelado']);
+            }
+        }
+    }
+
+    private function handlePaymentView(string $view, string $source)
+    {
+        $pago = $this->getPaymentForSession();
+        $membresiaId = Session::get('membresia_id');
+        $membresia = \App\Models\Membresia::find($membresiaId);
+
+        $this->logPaymentState($pago, $membresia, $source);
+
+        if (!$pago && $membresia) {
+            // Si no hay pago, eliminar membresía pendiente
+            $membresia->delete();
+            Session::forget('membresia_id');
+
+            return redirect()->route('athlete.planselection')
+                ->with('error', 'No se completó el pago.');
+        }
+
+        return view("athlete.payment.{$view}", [
+            'payment_id' => $pago?->payment_id
+        ]);
+    }
+
+    public function success()
+    {
+        return $this->handlePaymentView('success', 'success');
     }
 
     public function pending()
     {
-        $membresiaId = Session::get('membresia_id');
-        $pago = \App\Models\Pago::where('membresia_id', $membresiaId)->latest()->first();
+        return $this->handlePaymentView('pending', 'pending');
+    }
 
-        if (!$pago) {
-            return redirect()->route('athlete.planselection')
-                ->with('error', 'No se encontró información del pago.');
-        }
-
-        return view('athlete.payment.pending', [
-            'payment_id' => $pago->payment_id
-        ]);
-    } 
+    public function failure()
+    {
+        return $this->handlePaymentView('failure', 'failure');
+    }
 }

@@ -21,6 +21,37 @@ class MercadoPagoWebhookController extends Controller
         $this->paymentService = $paymentService;
     }
 
+    private function updateMembershipStatus(Membresia $membresia, string $status)
+    {
+        switch ($status) {
+            case 'approved':
+                $this->membershipService->activateMembership($membresia->id);
+                break;
+
+            case 'pending':
+                // Mantener como 'pago_pendiente' o actualizar timestamp
+                $membresia->touch();
+                break;
+
+            case 'rejected':
+                $membresia->update(['estado' => 'pago_rechazado']);
+                break;
+
+            case 'cancelled':
+                $membresia->update(['estado' => 'pago_cancelado']);
+                break;
+
+            case 'failure':
+                $membresia->update(['estado' => 'pago_fallido']);
+                break;
+
+            default:
+                Log::warning('Estado de pago desconocido', ['status' => $status]);
+                break;
+        }
+    }
+
+
     public function handle(Request $request)
     {
         Log::info('Webhook recibido', $request->all());
@@ -42,6 +73,11 @@ class MercadoPagoWebhookController extends Controller
         $externalReference = $payment['external_reference'];
         $status = $payment['status'] ?? 'unknown';
 
+        Log::info('Estado de pago recibido desde Mercado Pago', [
+            'payment_id' => $paymentId,
+            'status' => $status
+        ]);
+
         Log::info('Datos del pago', [
             'payment_id' => $paymentId,
             'external_reference' => $externalReference,
@@ -54,44 +90,37 @@ class MercadoPagoWebhookController extends Controller
             return response()->json(['message' => 'Membresía no encontrada'], 404);
         }
 
-        // Buscar pago existente por payment_id
+        // Verificar si el pago ya existe
         $pago = Pago::where('payment_id', $paymentId)->first();
 
         if ($pago) {
-            // Si cambió el estado, actualizarlo
+            // Actualizar pago existente si el estado cambió
             if ($pago->status !== $status) {
                 $pago->update(['status' => $status]);
-                Log::info("Estado de pago actualizado", ['payment_id' => $paymentId, 'nuevo_estado' => $status]);
-
-                if ($status === 'approved') {
-                    $this->membershipService->activateMembership((int) $externalReference);
-                }
+                $this->updateMembershipStatus($membresia, $status);
             }
-            return response()->json(['status' => 'updated']);
-        }
+        } else {
+            // Crear nuevo pago si no existe
+            $pago = Pago::create([
+                'membresia_id' => $membresia->id,
+                'payment_id' => $paymentId,
+                'fecha' => now(),
+                'detalle' => $payment['description'] ?? 'Pago de membresía',
+                'metodo_pago_id' => 1,
+                'importe' => $payment['transaction_amount'] ?? 0,
+                'status' => $status,
+                'payment_method_id' => $payment['payment_method_id'] ?? null,
+                'payment_type_id' => $payment['payment_type_id'] ?? null,
+                'authorization_code' => $payment['authorization_code'] ?? null,
+                'payer_email' => $payment['payer']['email'] ?? null,
+                'installments' => $payment['installments'] ?? null,
+                'date_approved' => $payment['date_approved'] ?? null,
+            ]);
 
-        // Crear nuevo pago si no existe
-        $pago = Pago::create([
-            'membresia_id' => $membresia->id,
-            'payment_id' => $paymentId,
-            'fecha' => now(),
-            'detalle' => $payment['description'] ?? 'Pago de membresía',
-            'metodo_pago_id' => 1,
-            'importe' => $payment['transaction_amount'] ?? 0,
-            'status' => $status,
-            'payment_method_id' => $payment['payment_method_id'] ?? null,
-            'payment_type_id' => $payment['payment_type_id'] ?? null,
-            'authorization_code' => $payment['authorization_code'] ?? null,
-            'payer_email' => $payment['payer']['email'] ?? null,
-            'installments' => $payment['installments'] ?? null,
-            'date_approved' => $payment['date_approved'] ?? null,
-        ]);
+            $this->updateMembershipStatus($membresia, $status);
+        }
 
         Log::info('Pago registrado correctamente', ['pago' => $pago]);
-
-        if ($status === 'approved') {
-            $this->membershipService->activateMembership((int) $externalReference);
-        }
 
         return response()->json(['message' => 'Webhook procesado'], 200);
     }
