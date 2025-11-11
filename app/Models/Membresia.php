@@ -29,4 +29,9 @@ class Membresia extends Model
     {
         return $this->belongsTo(TipoEntrenamiento::class);
     }
+
+    public function pagos()
+    {
+        return $this->hasMany(\App\Models\Pago::class, 'membresia_id');
+    }
 }

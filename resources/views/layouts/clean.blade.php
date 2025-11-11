@@ -2,7 +2,7 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ config('app.name', 'BoxCenter') }}</title>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -12,7 +12,7 @@
         {{-- Header --}}
         <nav class="bg-white border-b border-gray-200">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-                {{-- Logo sin link --}}
+                {{-- Logo --}}
                 <span class="text-lg font-semibold text-gray-800 leading-tight">BoxCenter</span>
 
                 {{-- Botón de cerrar sesión --}}

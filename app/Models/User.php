@@ -67,8 +67,9 @@ class User extends Authenticatable
             }
 
             // Pendiente de pago
-            if ($membresia->estado === 'pendiente') {
-                return route('athlete.payment');
+            $pago = $membresia->pagos()->latest()->first();
+            if ($pago && $pago->status === 'pending') {
+                return route('athlete.payment.pending', ['payment_id' => $pago->payment_id]);
             }
 
             // Vencida (por estado o por fecha)

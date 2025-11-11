@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 use App\Http\Livewire\MembershipSelector;
+use App\Http\Controllers\Athlete\MercadoPagoWebhookController;
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 
 Route::get('/', function () {
     return view('welcome');
@@ -38,3 +40,12 @@ Route::middleware(['auth'])->group(function () {
 Route::get('/home', function () {
     return view('welcome');
 })->name('home');
+
+// Webhook de Mercado Pago sin CSRF
+Route::withoutMiddleware([VerifyCsrfToken::class])
+    ->post('/webhooks/mercadopago', [MercadoPagoWebhookController::class, 'handle'])
+    ->name('webhooks.mercadopago');
+
+// Ruta para verificar el estado del pago
+Route::get('/athlete/payment/status/{payment_id}', [\App\Http\Controllers\Athlete\PaymentController::class, 'status'])
+    ->name('athlete.payment.status');

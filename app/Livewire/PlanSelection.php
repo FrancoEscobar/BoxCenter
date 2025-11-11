@@ -7,6 +7,7 @@ use App\Models\TipoEntrenamiento;
 use App\Models\Plan;
 use App\Models\Membresia;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Session;
 
 // Este componente se encarga de:
 // - Cargar los tipos de entrenamiento (CrossFit, Funcional, etc.) y los planes (mensual, semanal, etc.).
@@ -93,12 +94,9 @@ class PlanSelection extends Component
             return;
         }
 
-        // Guardar la selección en la sesión para usarla en el módulo de pago
-        session([
-            'tipo_entrenamiento_id' => $this->entrenamientoSeleccionado->id,
-            'plan_id' => $this->planSeleccionado->id,
-            'importe' => $this->planSeleccionado->precio
-        ]);
+        // Guardar en sesión
+        Session::put('plan_id', $this->planSeleccionado->id);
+        Session::put('tipo_entrenamiento_id', $this->entrenamientoSeleccionado->id);
 
         // Redirigir al módulo de pago
         return redirect()->route('athlete.payment');
