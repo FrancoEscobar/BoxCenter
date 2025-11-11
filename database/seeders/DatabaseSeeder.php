@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
             TipoEntrenamientoSeeder::class,
             PlanSeeder::class,
             MetodosPagoSeeder::class,
+            MembresiaSeeder::class,
         ]);
     }
 }
