@@ -29,7 +29,7 @@ class MercadoPagoWebhookController extends Controller
                 break;
 
             case 'pending':
-                // Mantener como 'pago_pendiente' o actualizar timestamp
+            case 'in_process':
                 $membresia->touch();
                 break;
 
@@ -38,15 +38,16 @@ class MercadoPagoWebhookController extends Controller
                 break;
 
             case 'cancelled':
-                $membresia->update(['estado' => 'pago_cancelado']);
+                $membresia->delete();
                 break;
 
-            case 'failure':
-                $membresia->update(['estado' => 'pago_fallido']);
+            case 'refunded':
+            case 'charged_back':
+                $membresia->update(['estado' => 'reembolsada']);
                 break;
 
             default:
-                Log::warning('Estado de pago desconocido', ['status' => $status]);
+                Log::warning('Estado de pago desconocido o no manejado', ['status' => $status]);
                 break;
         }
     }
