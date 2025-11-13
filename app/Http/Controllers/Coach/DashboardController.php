@@ -9,6 +9,14 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        return view('coach.dashboard');
+        $coach = auth()->user();
+
+        $nextClass = \App\Models\Clase::where('coach_id', $coach->id)
+            ->where('fecha', '>=', now())
+            ->orderBy('fecha')
+            ->orderBy('hora_inicio')
+            ->first();
+
+        return view('coach.dashboard', compact('nextClass'));
     }
 }

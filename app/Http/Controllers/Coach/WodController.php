@@ -12,7 +12,7 @@ class WodController extends Controller
      */
     public function index()
     {
-        //
+        return view('coach.wods');
     }
 
     /**
