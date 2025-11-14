@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
             PlanSeeder::class,
             MetodosPagoSeeder::class,
             MembresiaSeeder::class,
+            ClaseSeeder::class,
         ]);
     }
 }
