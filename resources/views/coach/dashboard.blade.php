@@ -59,7 +59,7 @@
         </div>
 
         <div class="col-md-3">
-            <a href="{{ route('coach.wods') }}" class="text-decoration-none">
+            <a href="{{ route('coach.wods.index') }}" class="text-decoration-none">
                 <div class="card h-100 text-center p-4 hover-shadow">
                     <h4>🏋️‍♂️ WODs</h4>
                     <p class="text-muted mb-0">Crea o edita WODs</p>
