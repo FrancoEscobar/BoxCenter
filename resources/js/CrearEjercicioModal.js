@@ -1,28 +1,43 @@
-document.addEventListener("DOMContentLoaded", () => {
-    const modalEl = document.getElementById("modalCrearEjercicio");
+// resources/js/wod-events.js
 
-    // Evitamos crear listeners duplicados
-    if (window.wodModalListeners) return;
-    window.wodModalListeners = true;
+document.addEventListener('livewire:init', () => {
+    
+    // Función para obtener Bootstrap de forma segura
+    const getBootstrap = () => {
+        return window.bootstrap || undefined;
+    };
 
-    // Si el modal no existe, no hacemos nada
-    if (!modalEl) return;
+    // 1. Listener para ABRIR el modal
+    Livewire.on('show-bs-modal', () => {
+        const modalEl = document.getElementById('modalCrearEjercicio');
+        const bs = getBootstrap();
 
-    // Bootstrap debe estar en window.bootstrap
-    const modal = new window.bootstrap.Modal(modalEl);
-
-    // Evento desde Livewire → mostrar modal
-    window.addEventListener("show-bs-modal", () => {
-        modal.show();
+        if (modalEl && bs) {
+            // getOrCreateInstance es vital para recuperar el modal si Livewire refrescó el DOM
+            const modal = bs.Modal.getOrCreateInstance(modalEl);
+            modal.show();
+        } else {
+            console.error('Error: No se encontró el modal o Bootstrap no está cargado.');
+        }
     });
 
-    // Evento desde Livewire → ocultar modal
-    window.addEventListener("hide-bs-modal", () => {
-        modal.hide();
+    // 2. Listener para CERRAR el modal
+    Livewire.on('hide-bs-modal', () => {
+        const modalEl = document.getElementById('modalCrearEjercicio');
+        const bs = getBootstrap();
+
+        if (modalEl && bs) {
+            const modal = bs.Modal.getOrCreateInstance(modalEl);
+            modal.hide();
+        }
     });
 
-    // Evento propio de Bootstrap → cuando termina de cerrarse
-    modalEl.addEventListener("hidden.bs.modal", () => {
-        Livewire.dispatch("reset-modal-state");
+    // 3. Listener para LIMPIAR (Delegación de eventos)
+    // Usamos delegación en el body porque si Livewire redibuja el modal, 
+    // un addEventListener directo al elemento se perdería.
+    document.body.addEventListener('hidden.bs.modal', (event) => {
+        if (event.target.id === 'modalCrearEjercicio') {
+            Livewire.dispatch('reset-modal-state');
+        }
     });
 });

@@ -104,7 +104,8 @@ class WodManager extends Component
     }
 
     public function openModalCrear()
-    {
+    {   
+        logger('🔔 Livewire lanzó el evento show-bs-modal');
         $this->reset(['nuevoNombre', 'nuevaDescripcion']);
         $this->resetErrorBag();
         $this->dispatch('show-bs-modal');
