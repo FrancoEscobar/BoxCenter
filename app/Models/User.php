@@ -112,4 +112,9 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function wods()
+    {
+        return $this->hasMany(Wod::class, 'user_id');
+    }
 }

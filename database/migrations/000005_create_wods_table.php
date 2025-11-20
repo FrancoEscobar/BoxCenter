@@ -10,7 +10,7 @@ return new class extends Migration {
             $table->id();
             $table->string('nombre', 100);
             $table->text('descripcion')->nullable();
-            $table->foreignId('creador_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('tipo_entrenamiento_id')->constrained('tipos_entrenamiento')->onDelete('cascade');
             $table->integer('duracion')->nullable(); // minutos
             $table->date('fecha_creacion')->nullable();
