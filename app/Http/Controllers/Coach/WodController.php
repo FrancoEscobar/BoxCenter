@@ -6,25 +6,21 @@ use App\Http\Controllers\Controller;
 use App\Models\Wod;
 use App\Models\TipoEntrenamiento;
 use Illuminate\Http\Request;
-use App\Models\Ejercicio;
 
 class WodController extends Controller
 {
     public function index()
     {
-        $wods = Wod::with(['tipoEntrenamiento', 'user'])->paginate(10);
+        $wods = Wod::with(['tipoEntrenamiento', 'user'])->latest()->paginate(10);
         $tipos = TipoEntrenamiento::all();
-        $ejercicios = Ejercicio::all();
-
-        return view('coach.wods.index', compact('wods', 'tipos', 'ejercicios'));
+        
+        return view('coach.wods.index', compact('wods', 'tipos'));
     }
 
     public function create()
     {
         $tipos = TipoEntrenamiento::all();
-        $ejercicios = Ejercicio::all();
-
-        return view('coach.wods.create', compact('tipos', 'ejercicios'));
+        return view('coach.wods.form', compact('tipos'));
     }
 
     public function store(Request $request)
@@ -64,38 +60,70 @@ class WodController extends Controller
             ->with('success', 'WOD creado correctamente');
     }
 
+    public function show(Wod $wod)
+    {
+        $tipos = TipoEntrenamiento::all();
+
+        return view('coach.wods.form', [
+            'wod' => $wod,
+            'tipos' => $tipos,
+            'readonly' => true
+        ]);
+    }
+
     public function edit(Wod $wod)
     {
         $this->authorizeWod($wod);
-        
-        $tipos = TipoEntrenamiento::all();
-        $ejercicios = Ejercicio::all();
-        $relaciones = $wod->ejercicios()->orderBy('pivot_orden')->get();
 
-        return view('coach.wods.edit', compact('wod', 'tipos', 'ejercicios', 'relaciones'));
+        $tipos = TipoEntrenamiento::all();
+        
+        return view('coach.wods.form', compact('wod', 'tipos'));
     }
 
     public function update(Request $request, Wod $wod)
     {
         $this->authorizeWod($wod);
 
-        $request->validate([
+        $data = $request->validate([
             'nombre' => 'required|max:100',
             'descripcion' => 'nullable|string',
             'tipo_entrenamiento_id' => 'required|exists:tipos_entrenamiento,id',
             'duracion' => 'nullable|integer',
-            'fecha_creacion' => 'nullable|date',
+            'ejercicios' => 'required|array|min:1',
+            'ejercicios.*.id' => 'required|exists:ejercicios,id',
+            'ejercicios.*.orden' => 'required|integer',
+            'ejercicios.*.series' => 'nullable|integer|min:1',
+            'ejercicios.*.repeticiones' => 'nullable|integer|min:1',
+            'ejercicios.*.duracion' => 'nullable|integer|min:0',
         ]);
 
-        $wod->update($request->all());
+        $wod->update([
+            'nombre' => $data['nombre'],
+            'descripcion' => $data['descripcion'] ?? null,
+            'tipo_entrenamiento_id' => $data['tipo_entrenamiento_id'],
+            'duracion' => $data['duracion'] ?? null,
+        ]);
 
-        return redirect()->route('coach.wods.index')->with('success', 'WOD actualizado.');
+        $syncData = [];
+        
+        $wod->ejercicios()->detach();
+
+        foreach ($data['ejercicios'] as $ej) {
+            $wod->ejercicios()->attach($ej['id'], [
+                'orden' => $ej['orden'],
+                'series' => $ej['series'] ?? null,
+                'repeticiones' => $ej['repeticiones'] ?? null,
+                'duracion' => $ej['duracion'] ?? null,
+            ]);
+        }
+
+        return redirect()->route('coach.wods.index')->with('success', 'WOD actualizado correctamente.');
     }
 
-    public function destroy(Wod $wod)
+public function destroy(Wod $wod)
     {
         $this->authorizeWod($wod);
-
+        $wod->ejercicios()->detach(); 
         $wod->delete();
 
         return redirect()->route('coach.wods.index')->with('success', 'WOD eliminado.');

@@ -21,7 +21,7 @@
             No hay WODs para mostrar.
         </div>
     @else
-        <table class="table table-bordered table-striped align-middle">
+        <table class="table table-bordered table-striped align-middle table-hover">
             <thead>
                 <tr>
                     <th>Nombre</th>
@@ -33,18 +33,22 @@
             </thead>
             <tbody>
                 @foreach ($wods as $wod)
-                    <tr>
+                    {{-- 1. El onclick de la fila lleva a la vista SHOW (que ahora es el formulario readonly) --}}
+                    <tr class="wod-row" style="cursor: pointer;" onclick="window.location='{{ route('coach.wods.show', $wod) }}'">
                         <td>{{ $wod->nombre }}</td>
                         <td>{{ $wod->tipoEntrenamiento->nombre }}</td>
                         <td>{{ $wod->duracion ? $wod->duracion . ' min' : '-' }}</td>
-                        <td>{{ $wod->fecha_creacion?->format('d/m/Y') }}</td>
+                        <td>{{ optional($wod->fecha_creacion)->format('d/m/Y') ?? '-' }}</td>
 
-                        <td class="text-end">
+                        {{-- 2. IMPORTANTE: event.stopPropagation() en esta celda --}}
+                        <td class="text-end" onclick="event.stopPropagation()">
 
-                            <!-- <a href="{{ route('coach.wods.edit', $wod) }}" 
-                               class="btn btn-sm btn-warning">
-                                Editar
-                            </a> -->
+                            {{-- Puedes descomentar esto si quieres un acceso directo a editar --}}
+                            {{-- 
+                            <a href="{{ route('coach.wods.edit', $wod) }}" class="btn btn-sm btn-warning me-1">
+                                <i class="bi bi-pencil"></i>
+                            </a> 
+                            --}}
 
                             <form action="{{ route('coach.wods.destroy', $wod) }}" 
                                   method="POST" 
@@ -68,4 +72,18 @@
         </div>
     @endif
 </div>
+
+<style>
+    .wod-row {
+        transition: all 0.2s ease;
+    }
+
+    .wod-row:hover td {
+        background-color: #e9ecef;
+    }
+    
+    .wod-row:hover .btn-danger {
+        border-color: white;
+    }
+</style>
 @endsection

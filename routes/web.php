@@ -49,3 +49,7 @@ Route::withoutMiddleware([VerifyCsrfToken::class])
 // Ruta para verificar el estado del pago
 Route::get('/athlete/payment/status/{payment_id}', [\App\Http\Controllers\Athlete\PaymentController::class, 'status'])
     ->name('athlete.payment.status');
+
+Route::get('/test-wod-create', function() {
+    return app()->call('App\Http\Controllers\Coach\WodController@create');
+});
