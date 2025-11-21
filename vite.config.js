@@ -9,8 +9,14 @@ export default defineConfig({
         }),
     ],
     server: {
-        host: 'localhost',
+        host: '0.0.0.0',
         port: 5173,
+        hmr: {
+            host: 'localhost',
+        },
+        watch: {
+            usePolling: true,
+        },
     }
 })
 
