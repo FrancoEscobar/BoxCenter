@@ -12,9 +12,9 @@
                     <h4 class="fw-bold">Calendario de Clases</h4>
                     <p class="text-muted">Visualiza y organiza tus clases según fecha, entrenamiento y disponibilidad.</p>
 
-                    <a href="" class="btn btn-success w-100 mb-3 shadow-sm fw-bold">
+                    <button onclick="Livewire.dispatch('open-create-modal')" class="btn btn-success w-100 mb-3 shadow-sm fw-bold">
                         <i class="bi bi-plus-lg me-1"></i> Crear Nueva Clase
-                    </a>
+                    </button>
 
                     <hr>
 
@@ -102,26 +102,26 @@
 document.addEventListener("DOMContentLoaded", function () {
     var calendarEl = document.getElementById("calendar");
 
+    // CONFIGURACIÓN DEL CALENDARIO
     var calendar = new FullCalendar.Calendar(calendarEl, {
-        // 1. Vista inicial por defecto
         initialView: 'dayGridMonth',
         locale: "es",
         height: "auto",
         editable: false,
         displayEventEnd: true,
 
-        // 2. NUEVO: Configurar la barra superior para mostrar los botones de cambio
+        // Barra superior
         headerToolbar: {
             left: 'prev,next today',
             center: 'title',
-            right: 'dayGridMonth,listMonth' // Aquí agregamos la vista de lista
+            right: 'dayGridMonth,listMonth'
         },
 
-        // 3. NUEVO: Traducciones de los botones
+        // Textos
         buttonText: {
             today: 'Hoy',
             month: 'Mes',
-            list:  'Lista', // Nombre del botón para la vista de lista
+            list:  'Lista', 
             week:  'Semana',
             day:   'Día'
         },
@@ -132,7 +132,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if (loader) loader.style.display = isLoading ? 'flex' : 'none';
         },
 
-        // Carga de datos
+        // Carga de eventos (AJAX)
         events: function(fetchInfo, successCallback, failureCallback) {
             let filtros = {
                 tipo: document.getElementById("filter-tipo")?.value,
@@ -151,41 +151,32 @@ document.addEventListener("DOMContentLoaded", function () {
                 .catch(error => failureCallback(error));
         },
 
-        // 4. DISEÑO (Adaptado para Lista y Grilla)
+        // Diseño de la tarjeta
         eventContent: function(arg) {
             let props = arg.event.extendedProps;
             let title = arg.event.title;
             let inscriptos = props.inscriptos !== undefined ? props.inscriptos : 0;
             let total      = props.cupo_total !== undefined ? props.cupo_total : 0;
             
-            // Clase para el badge (Rojo/Gris)
             let badgeClass = (inscriptos >= total) 
                 ? 'bg-danger text-white border-danger' 
                 : 'bg-light text-dark bg-opacity-75';
 
-            // --- CASO A: VISTA DE LISTA (listMonth) ---
+            // VISTA LISTA
             if (arg.view.type === 'listMonth') {
-                // En la lista, la hora ya sale en otra columna, así que no la ponemos aquí.
-                // Mostramos: Título grande + Coach + Cupo a la derecha
                 let coachName = props.coach ? props.coach : 'Sin Asignar';
-                
                 let html = `
                     <div class="d-flex justify-content-between align-items-center w-100">
                         <div class="d-flex flex-column">
                             <span class="fw-bold text-uppercase">${title}</span>
                             <span class="small text-muted fst-italic">Coach ${coachName}</span>
                         </div>
-                        <span class="badge ${badgeClass} ms-2" style="font-size: 0.85em;">
-                            ${inscriptos}/${total}
-                        </span>
-                    </div>
-                `;
+                        <span class="badge ${badgeClass} ms-2" style="font-size: 0.85em;">${inscriptos}/${total}</span>
+                    </div>`;
                 return { html: html };
             } 
-            
-            // --- CASO B: VISTA DE CALENDARIO (dayGridMonth) ---
+            // VISTA MES
             else {
-                // Tu diseño original de barra compacta
                 let formatTime = (date) => date ? date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', hour12: false}) : '';
                 let start = formatTime(arg.event.start);
                 let end   = formatTime(arg.event.end);
@@ -196,29 +187,53 @@ document.addEventListener("DOMContentLoaded", function () {
                         <span class="fw-bold me-1" style="font-size: 0.8em;">${timeStr}</span>
                         <span class="me-1">-</span>
                         <span class="fw-semibold text-truncate me-auto" style="font-size: 0.9em;">${title}</span>
-                        <span class="badge ${badgeClass} ms-1" style="font-size: 0.75em;">
-                            ${inscriptos}/${total}
-                        </span>
-                    </div>
-                `;
+                        <span class="badge ${badgeClass} ms-1" style="font-size: 0.75em;">${inscriptos}/${total}</span>
+                    </div>`;
                 return { html: html };
             }
         },
 
+        // CLIC EN CLASE EXISTENTE -> DETALLES
         eventClick: function(info) {
             window.location.href = `/coach/classes/${info.event.id}`;
-        }
+        },
+
+        // CLIC EN DÍA VACÍO -> CREAR NUEVA
+        dateClick: function(info) {
+            // Validar fecha pasada
+            const now = new Date();
+            const todayStr = now.toISOString().split('T')[0]; // Formato YYYY-MM-DD
+            
+            if (info.dateStr < todayStr) {
+                return; // No hacer nada si es pasado
+            }
+
+            Livewire.dispatch('open-create-modal', { fecha: info.dateStr });
+        },
     });
 
     calendar.render();
 
-    // --- Resto de lógica de filtros y botones (sin cambios) ---
+
+    // INTEGRACIÓN LIVEWIRE Y MODAL
+    const modalElement = document.getElementById('createClaseModal');
+    // Verificamos que el modal exista para evitar errores si no carga
+    if (modalElement) {
+        const bootstrapModal = new bootstrap.Modal(modalElement);
+
+        Livewire.on('show-bootstrap-modal', () => bootstrapModal.show());
+        Livewire.on('hide-bootstrap-modal', () => bootstrapModal.hide());
+        Livewire.on('refresh-calendar', () => calendar.refetchEvents());
+    }
+
+    // FILTROS AUTOMÁTICOS
     const filterIDs = ["filter-tipo", "filter-coach", "filter-estado", "filter-cupo", "filter-hora-inicio", "filter-hora-fin"];
     filterIDs.forEach(id => {
         const element = document.getElementById(id);
-        if (element) element.addEventListener("change", () => calendar.refetchEvents()); // Input para detectar cambios de fecha
+        if (element) element.addEventListener("change", () => calendar.refetchEvents());
     });
 
+    // FLATPICKR
     const dateInput = document.getElementById("goto-date");
     if (dateInput) {
         flatpickr(dateInput, {
@@ -227,6 +242,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
+    // LIMPIAR HORARIO
     const btnLimpiarHorario = document.getElementById("btn-limpiar-horario");
     if (btnLimpiarHorario) {
         btnLimpiarHorario.addEventListener("click", () => {
@@ -240,7 +256,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 {{-- Estilos --}}
 <style>
-    /* --- FUENTE GENERAL --- */
+    /* --- FUENTE Y GENERAL --- */
     #calendar {
         font-size: 14px !important;
     }
@@ -250,13 +266,14 @@ document.addEventListener("DOMContentLoaded", function () {
         font-weight: bold;
         font-size: 1.4rem;
         color: #000 !important;
-        text-transform: capitalize !important; /* <--- AQUI EL CAMBIO: Capitaliza (Noviembre 2025) */
+        text-transform: capitalize !important; /* Ej: Noviembre 2025 */
     }
 
     .fc .fc-button-group {
         gap: 8px !important;
     }
 
+    /* Botones Normales (Inactivos) */
     .fc .fc-button {
         border-radius: 8px !important;
         background-color: #6cb8ff !important;
@@ -275,6 +292,7 @@ document.addEventListener("DOMContentLoaded", function () {
         box-shadow: 0 0 0 0.25rem rgba(108, 184, 255, 0.5) !important;
     }
 
+    /* Botón Activo (Vista Seleccionada) */
     .fc .fc-button-active {
         background-color: #0d6efd !important; 
         border-color: #0d6efd !important;
@@ -283,7 +301,7 @@ document.addEventListener("DOMContentLoaded", function () {
         box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125) !important;
     }
 
-    /* --- CABECERAS DE DÍA (LUN, MAR...) --- */
+    /* --- CABECERAS DEL CALENDARIO --- */
     .fc-col-header-cell-cushion {
         text-transform: uppercase !important;
         color: #555 !important;
@@ -293,7 +311,6 @@ document.addEventListener("DOMContentLoaded", function () {
         padding: 8px 0 !important;
     }
 
-    /* --- NÚMEROS DE DÍA (1, 2, 3...) --- */
     .fc-daygrid-day-number {
         color: #333 !important;
         text-decoration: none !important;
@@ -310,16 +327,45 @@ document.addEventListener("DOMContentLoaded", function () {
         text-decoration: none !important;
     }
 
-    /* --- DISEÑO DEL EVENTO (LA BARRA) --- */
+    /* --- INTERACCIÓN CON LOS DÍAS (CLICS) --- */
+    
+    /* Días Futuros y Hoy: Se pueden clicar */
+    .fc-daygrid-day-frame {
+        cursor: pointer; /* Manito */
+        padding: 2px !important;
+        min-height: 100px !important;
+        transition: background-color 0.2s;
+    }
+    
+    .fc-daygrid-day-frame:hover {
+        background-color: rgba(0,0,0,0.04); /* Gris suave al pasar mouse */
+    }
+
+    /* Días Pasados: NO se pueden clicar (Bloqueo visual) */
+    .fc-day-past .fc-daygrid-day-frame {
+        cursor: default !important; /* Flecha normal */
+        background-color: #fdfdfd; /* Fondo sutilmente diferente */
+    }
+
+    /* Evitamos que el hover funcione en días pasados */
+    .fc-day-past .fc-daygrid-day-frame:hover {
+        background-color: #fdfdfd; 
+    }
+
+    /* --- DISEÑO DEL EVENTO (LA BARRA DE CLASE) --- */
     .fc-daygrid-event {
         border-radius: 4px !important;
         margin-top: 2px !important;
         border: none !important;
         cursor: pointer;
         box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        
+        /* Texto en NEGRO siempre */
+        color: #000 !important; 
+        text-decoration: none !important;
     }
 
-    /* CONTENIDO INTERNO DEL EVENTO */
+    /* Contenido interno del evento (Flexbox para alinear hora - titulo - badge) */
     .fc-event-main {
         display: flex !important;
         align-items: center !important;
@@ -329,7 +375,7 @@ document.addEventListener("DOMContentLoaded", function () {
         overflow: hidden !important;
     }
 
-    /* EFECTO HOVER */
+    /* Efecto al pasar el mouse por el evento */
     .fc-daygrid-event:hover {
         filter: brightness(0.95);
         transform: scale(1.01);   
@@ -337,21 +383,17 @@ document.addEventListener("DOMContentLoaded", function () {
         transition: all 0.1s ease-in-out;
     }
 
-    /* --- AJUSTES DE CONTENEDORES --- */
-    .card-calendar-container {
-        max-width: 850px;
-        margin: 0 auto;       
+    /* --- ESTILOS PARA LA VISTA DE LISTA --- */
+    .fc-list-day-text,
+    .fc-list-day-side-text,
+    a.fc-list-day-text, 
+    a.fc-list-day-side-text {
+        color: #000 !important; /* Fecha en negro */
+        text-decoration: none !important;
+        font-weight: bold;
     }
 
-    .card-calendar-container .card {
-        padding: 1.5rem !important;
-    }
-
-    .fc .fc-daygrid-day-frame {
-        padding: 2px !important;
-        min-height: 100px !important;
-    }
-
+    /* --- OVERLAY DE CARGA (SPINNER) --- */
     .loading-overlay {
         position: absolute;
         top: 0;
@@ -367,20 +409,16 @@ document.addEventListener("DOMContentLoaded", function () {
         backdrop-filter: blur(2px); 
     }
 
-    .fc-daygrid-day-frame {
-        cursor: pointer;
-    }
-    .fc-daygrid-day-frame:hover {
-        background-color: rgba(0,0,0,0.02);
+    /* --- AJUSTES DE CONTENEDORES --- */
+    .card-calendar-container {
+        max-width: 850px;
+        margin: 0 auto;       
     }
 
-    /* --- ESTILOS VISTA LISTA --- */
-    .fc-list-day-text,
-    .fc-list-day-side-text,
-    a.fc-list-day-text, 
-    a.fc-list-day-side-text {
-        color: #000 !important;
-        text-decoration: none !important;
+    .card-calendar-container .card {
+        padding: 1.5rem !important;
     }
 </style>
+
+@livewire('coach.create-clase-modal')
 @endsection

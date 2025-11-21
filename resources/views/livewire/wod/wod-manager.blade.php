@@ -2,8 +2,7 @@
     <div>
         <div>
             <div class="alert alert-danger">
-                MODO ACTUAL: {{ $modo }} <br>
-                ¿ES EDICIÓN?: {{ $isEditing ? 'SI' : 'NO' }}
+                <strong>Nota:</strong> Los ejercicios se guardan en el orden en que aparecen.
             </div>   
             <!-- Botones -->
             <div class="d-flex gap-2 mt-3">
