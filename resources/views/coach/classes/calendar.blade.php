@@ -195,6 +195,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
         //--- INICIALIZAR POPOVER AL MONTAR EL EVENTO ---
         eventDidMount: function(info) {
+            // No mostrar popover en vista lista
+            if (info.view.type === 'listMonth' || info.view.type.includes('list')) {
+                return; 
+            }
+
              // Extraer datos para mostrar
             let props = info.event.extendedProps;
             let title = info.event.title;
