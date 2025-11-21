@@ -29,8 +29,8 @@ class ClaseSeeder extends Seeder
         foreach ($fechas as $index => $fecha) {
             Clase::create([
                 'fecha' => $fecha->format('Y-m-d'),
-                'hora_inicio' => '18:00:00',
-                'hora_fin' => '19:00:00',
+                'hora_inicio' => '22:00:00',
+                'hora_fin' => '23:00:00',
                 'tipo_entrenamiento_id' => $tipo->id,
                 'coach_id' => $coach->id,
                 'estado' => $fecha->isPast() ? 'realizada' : 'programada',

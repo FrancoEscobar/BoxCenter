@@ -40,4 +40,8 @@ Route::middleware(['auth', 'verified', 'role:coach'])
         Route::delete('/wods/{wod}', [WodController::class, 'destroy'])
             ->name('wods.destroy')
             ->whereNumber('wod');
+
+        // --- RUTAS DE CLASES
+        Route::get('/calendar/events', [ClassCalendarController::class, 'events'])
+            ->name('calendar.events');
     });
