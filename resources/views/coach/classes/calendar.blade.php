@@ -193,6 +193,48 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         },
 
+        //--- INICIALIZAR POPOVER AL MONTAR EL EVENTO ---
+        eventDidMount: function(info) {
+             // Extraer datos para mostrar
+            let props = info.event.extendedProps;
+            let title = info.event.title;
+            let coach = props.coach ? props.coach : 'Sin Asignar';
+            // Formatear horario simple
+            let formatOpts = {hour: '2-digit', minute:'2-digit', hour12: false};
+            let horario = `${info.event.start.toLocaleTimeString([], formatOpts)} a ${info.event.end.toLocaleTimeString([], formatOpts)}`;
+            let cupoTxt = `${props.inscriptos || 0}/${props.cupo_total || 0} inscriptos`;
+
+            // Crear el contenido HTML del Popover
+            let popoverContent = `
+                <div class="text-start small">
+                    <div class="mb-1"><i class="bi bi-clock me-1 text-muted"></i> ${horario}</div>
+                    <div class="mb-1"><i class="bi bi-person-badge me-1 text-muted"></i> Coach: <strong>${coach}</strong></div>
+                    <div><i class="bi bi-people me-1 text-muted"></i> Cupo: <strong>${cupoTxt}</strong></div>
+                </div>
+            `;
+
+            // Inicializar el Popover de Bootstrap en el elemento del evento (info.el)
+            // Guardamos la instancia en el mismo elemento para poder destruirla luego
+            info.el.popoverInstance = new bootstrap.Popover(info.el, {
+                title: `<div class="fw-bold">${title}</div>`,
+                content: popoverContent, // El cuerpo HTML 
+                html: true,              // Permitir HTML dentro
+                trigger: 'hover',        // Se activa al pasar el mouse
+                placement: 'auto',       // Bootstrap decide dónde se ve mejor 
+                container: 'body',       // Lo adjunta al body para que no quede cortado dentro de la celda del calendario
+                delay: { "show": 100, "hide": 50 }, // delay
+                customClass: 'shadow-sm border-0' // Clases opcionales para el contenedor del popover
+            });
+        },
+
+        // --- DESTRUIR POPOVER AL DESELECCIONAR EL EVENTO ---
+        eventWillUnmount: function(info) {
+            // Si existe un popover en este elemento, lo destruimos para liberar memoria
+            if (info.el.popoverInstance) {
+                info.el.popoverInstance.dispose();
+            }
+        },
+
         // CLIC EN CLASE EXISTENTE -> DETALLES
         eventClick: function(info) {
             window.location.href = `/coach/classes/${info.event.id}`;
@@ -393,6 +435,15 @@ document.addEventListener("DOMContentLoaded", function () {
         font-weight: bold;
     }
 
+    .fc-list-event {
+        cursor: pointer !important; /* Manito */
+        transition: background-color 0.1s;
+    }
+
+    .fc-list-event:hover td {
+        background-color: rgba(0,0,0,0.05) !important; /* Gris suave */
+    }
+
     /* --- OVERLAY DE CARGA (SPINNER) --- */
     .loading-overlay {
         position: absolute;
@@ -417,6 +468,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
     .card-calendar-container .card {
         padding: 1.5rem !important;
+    }
+
+    /* --- ESTILOS PARA EL POPOVER DE BOOTSTRAP --- */
+    .popover-header {
+        background-color: #f8f9fa !important;
+        color: #000 !important;
+        border-bottom: 1px solid #eee !important;
+        padding: 0.5rem 0.75rem !important;
+    }
+    .popover-body {
+        padding: 0.75rem !important;
+        color: #333;
     }
 </style>
 
