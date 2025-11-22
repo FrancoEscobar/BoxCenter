@@ -102,202 +102,180 @@
 document.addEventListener("DOMContentLoaded", function () {
     var calendarEl = document.getElementById("calendar");
 
-    // CONFIGURACIÓN DEL CALENDARIO
     var calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
         locale: "es",
         height: "auto",
         editable: false,
         displayEventEnd: true,
-
-        // Barra superior
+        
+        // Configuración de la Barra Superior (Aquí está el botón de lista)
         headerToolbar: {
             left: 'prev,next today',
             center: 'title',
-            right: 'dayGridMonth,listMonth'
+            right: 'dayGridMonth,listMonth' // <--- ESTO ACTIVA LA VISTA DE LISTA
         },
+        buttonText: { today: 'Hoy', month: 'Mes', list: 'Lista', week: 'Semana', day: 'Día' },
 
-        // Textos
-        buttonText: {
-            today: 'Hoy',
-            month: 'Mes',
-            list:  'Lista', 
-            week:  'Semana',
-            day:   'Día'
-        },
-
-        // Loader
+        // Loader visual
         loading: function(isLoading) {
             const loader = document.getElementById('calendar-loader');
             if (loader) loader.style.display = isLoading ? 'flex' : 'none';
         },
 
-        // Carga de eventos (AJAX)
+        // 1. CARGA DE EVENTOS
         events: function(fetchInfo, successCallback, failureCallback) {
             let filtros = {
                 tipo: document.getElementById("filter-tipo")?.value,
                 coach: document.getElementById("filter-coach")?.value,
                 estado: document.getElementById("filter-estado")?.value,
-                cupo: document.getElementById("filter-cupo")?.value,
-                hora_inicio: document.getElementById("filter-hora-inicio")?.value,
-                hora_fin: document.getElementById("filter-hora-fin")?.value,
                 start: fetchInfo.startStr,
                 end: fetchInfo.endStr
             };
 
+            console.log("Solicitando eventos...", filtros); // DEBUG
+
             fetch('/coach/calendar/events?' + new URLSearchParams(filtros))
                 .then(response => response.json())
-                .then(events => successCallback(events))
-                .catch(error => failureCallback(error));
+                .then(events => {
+                    console.log("Eventos recibidos:", events.length); // DEBUG
+                    successCallback(events);
+                })
+                .catch(error => {
+                    console.error("Error AJAX:", error);
+                    failureCallback(error);
+                });
         },
 
-        // Diseño de la tarjeta
+        // 2. DISEÑO VISUAL (Barra y Lista)
         eventContent: function(arg) {
             let props = arg.event.extendedProps;
-            let title = arg.event.title;
-            let inscriptos = props.inscriptos !== undefined ? props.inscriptos : 0;
-            let total      = props.cupo_total !== undefined ? props.cupo_total : 0;
+            let color = arg.event.backgroundColor || '#6c757d';
             
-            let badgeClass = (inscriptos >= total) 
-                ? 'bg-danger text-white border-danger' 
-                : 'bg-light text-dark bg-opacity-75';
-
-            // VISTA LISTA
+            // Si es vista de LISTA, usamos diseño simple
             if (arg.view.type === 'listMonth') {
-                let coachName = props.coach ? props.coach : 'Sin Asignar';
-                let html = `
-                    <div class="d-flex justify-content-between align-items-center w-100">
-                        <div class="d-flex flex-column">
-                            <span class="fw-bold text-uppercase">${title}</span>
-                            <span class="small text-muted fst-italic">Coach ${coachName}</span>
-                        </div>
-                        <span class="badge ${badgeClass} ms-2" style="font-size: 0.85em;">${inscriptos}/${total}</span>
-                    </div>`;
-                return { html: html };
+                return { html: `
+                    <div class="d-flex justify-content-between w-100">
+                        <span class="fw-bold" style="color: ${color}">${arg.event.title}</span>
+                        <span class="small text-muted ms-2">Coach ${props.coach}</span>
+                    </div>` 
+                };
             } 
-            // VISTA MES
-            else {
-                let formatTime = (date) => date ? date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', hour12: false}) : '';
-                let start = formatTime(arg.event.start);
-                let end   = formatTime(arg.event.end);
-                let timeStr = (start && end) ? `${start} a ${end}` : start;
-
-                let html = `
-                    <div class="d-flex align-items-center w-100 px-1 overflow-hidden text-nowrap">
-                        <span class="fw-bold me-1" style="font-size: 0.8em;">${timeStr}</span>
-                        <span class="me-1">-</span>
-                        <span class="fw-semibold text-truncate me-auto" style="font-size: 0.9em;">${title}</span>
-                        <span class="badge ${badgeClass} ms-1" style="font-size: 0.75em;">${inscriptos}/${total}</span>
-                    </div>`;
-                return { html: html };
-            }
-        },
-
-        //--- INICIALIZAR POPOVER AL MONTAR EL EVENTO ---
-        eventDidMount: function(info) {
-            // No mostrar popover en vista lista
-            if (info.view.type === 'listMonth' || info.view.type.includes('list')) {
-                return; 
-            }
-
-             // Extraer datos para mostrar
-            let props = info.event.extendedProps;
-            let title = info.event.title;
-            let coach = props.coach ? props.coach : 'Sin Asignar';
-            // Formatear horario simple
-            let formatOpts = {hour: '2-digit', minute:'2-digit', hour12: false};
-            let horario = `${info.event.start.toLocaleTimeString([], formatOpts)} a ${info.event.end.toLocaleTimeString([], formatOpts)}`;
-            let cupoTxt = `${props.inscriptos || 0}/${props.cupo_total || 0} inscriptos`;
-
-            // Crear el contenido HTML del Popover
-            let popoverContent = `
-                <div class="text-start small">
-                    <div class="mb-1"><i class="bi bi-clock me-1 text-muted"></i> ${horario}</div>
-                    <div class="mb-1"><i class="bi bi-person-badge me-1 text-muted"></i> Coach: <strong>${coach}</strong></div>
-                    <div><i class="bi bi-people me-1 text-muted"></i> Cupo: <strong>${cupoTxt}</strong></div>
-                </div>
-            `;
-
-            // Inicializar el Popover de Bootstrap en el elemento del evento (info.el)
-            // Guardamos la instancia en el mismo elemento para poder destruirla luego
-            info.el.popoverInstance = new bootstrap.Popover(info.el, {
-                title: `<div class="fw-bold">${title}</div>`,
-                content: popoverContent, // El cuerpo HTML 
-                html: true,              // Permitir HTML dentro
-                trigger: 'hover',        // Se activa al pasar el mouse
-                placement: 'auto',       // Bootstrap decide dónde se ve mejor 
-                container: 'body',       // Lo adjunta al body para que no quede cortado dentro de la celda del calendario
-                delay: { "show": 100, "hide": 50 }, // delay
-                customClass: 'shadow-sm border-0' // Clases opcionales para el contenedor del popover
-            });
-        },
-
-        // --- DESTRUIR POPOVER AL DESELECCIONAR EL EVENTO ---
-        eventWillUnmount: function(info) {
-            // Si existe un popover en este elemento, lo destruimos para liberar memoria
-            if (info.el.popoverInstance) {
-                info.el.popoverInstance.dispose();
-            }
-        },
-
-        // CLIC EN CLASE EXISTENTE -> DETALLES
-        eventClick: function(info) {
-            window.location.href = `/coach/classes/${info.event.id}`;
-        },
-
-        // CLIC EN DÍA VACÍO -> CREAR NUEVA
-        dateClick: function(info) {
-            // Validar fecha pasada
-            const now = new Date();
-            const todayStr = now.toISOString().split('T')[0]; // Formato YYYY-MM-DD
             
-            if (info.dateStr < todayStr) {
-                return; // No hacer nada si es pasado
-            }
-
-            Livewire.dispatch('open-create-modal', { fecha: info.dateStr });
+            // Si es vista de MES (Barra)
+            let time = arg.event.start.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            let badgeInfo = `${props.inscriptos}/${props.cupo_total}`;
+            
+            return { html: `
+                <div class="d-flex align-items-center px-1 overflow-hidden text-nowrap" 
+                     style="border-left: 3px solid ${color}; font-size: 0.85em;">
+                    <span class="fw-bold me-1">${time}</span>
+                    <span class="fw-semibold text-truncate me-auto">${arg.event.title}</span>
+                    <span class="bi-people badge bg-light text-dark border ms-1" style="font-size: 0.75em;"> ${badgeInfo}</span>
+                </div>` 
+            };
         },
+
+        // --- POPOVER ---
+        eventDidMount: function(info) {
+            // No mostrar en lista
+            if (info.view.type === 'listMonth' || info.view.type.includes('list')) return;
+
+            try {
+                if (typeof bootstrap === 'undefined') return;
+
+                let props = info.event.extendedProps;
+                // 1. CAPTURAMOS EL COLOR DEL EVENTO
+                let color = info.event.backgroundColor || '#6c757d'; 
+                let title = info.event.title;
+                
+                // Estado en mayúsculas
+                let textoEstado = props.estado ? props.estado.toUpperCase() : '';
+
+                // Formato de hora
+                let formatOpts = {hour: '2-digit', minute:'2-digit', hour12: false};
+                let horario = `${info.event.start.toLocaleTimeString([], formatOpts)} a ${info.event.end.toLocaleTimeString([], formatOpts)}`;
+                let cupoTxt = `${props.inscriptos || 0}/${props.cupo_total || 0} inscritos`;
+
+                // CONTENIDO (Cuerpo)
+                let content = `
+                    <div class="text-start small">
+                        <div class="mb-1"><i class="bi bi-clock me-1 text-muted"></i> ${horario}</div>
+                        <div class="mb-1"><i class="bi bi-person-badge me-1 text-muted"></i> Coach: <strong>${props.coach}</strong></div>
+                        <div><i class="bi bi-people me-1 text-muted"></i> Cupo: <strong>${cupoTxt}</strong></div>
+                    </div>`;
+
+                // TÍTULO 
+                let headerTitle = `
+                    <div class="d-flex justify-content-between align-items-center text-white">
+                        <span class="fw-bold text-truncate me-2" style="max-width: 160px;">${title}</span>
+                        <span class="badge bg-white text-white bg-opacity-25" style="font-size: 0.65em;">${textoEstado}</span>
+                    </div>`;
+
+                // TEMPLATE
+                let customTemplate = `
+                    <div class="popover border-0 shadow" role="tooltip">
+                        <div class="popover-arrow"></div>
+                        <h3 class="popover-header text-white" style="background-color: ${color} !important;"></h3>
+                        <div class="popover-body"></div>
+                    </div>
+                `;
+
+                let popover = new bootstrap.Popover(info.el, {
+                    title: headerTitle, // El título con HTML
+                    content: content,
+                    html: true,
+                    trigger: 'hover',
+                    placement: 'auto',
+                    container: 'body',
+                    template: customTemplate, // Usamos la plantilla con el color dinámico
+                    sanitize: false // Permitir HTML en el contenido
+                });
+                
+                info.el.popover = popover;
+
+            } catch (e) {
+                console.warn("Error al crear popover:", e);
+            }
+        },
+
+        // Limpiar Popover
+        eventWillUnmount: function(info) {
+            if (info.el.popover) info.el.popover.dispose();
+        },
+
+        // Acciones
+        eventClick: function(info) {
+            Livewire.dispatch('open-view-modal', { claseId: info.event.id });
+        },
+        
+        dateClick: function(info) {
+            const today = new Date().toISOString().split('T')[0];
+            if (info.dateStr >= today) {
+                Livewire.dispatch('open-create-modal', { fecha: info.dateStr });
+            }
+        }
     });
 
-    calendar.render();
+    // Renderizar
+    setTimeout(() => {
+        calendar.render();
+        console.log("Calendario renderizado");
+    }, 100);
 
-
-    // INTEGRACIÓN LIVEWIRE Y MODAL
-    const modalElement = document.getElementById('createClaseModal');
-    // Verificamos que el modal exista para evitar errores si no carga
-    if (modalElement) {
-        const bootstrapModal = new bootstrap.Modal(modalElement);
-
-        Livewire.on('show-bootstrap-modal', () => bootstrapModal.show());
-        Livewire.on('hide-bootstrap-modal', () => bootstrapModal.hide());
+    // INTEGRACIÓN LIVEWIRE (Modales)
+    const modalEl = document.getElementById('createClaseModal');
+    if (modalEl && typeof bootstrap !== 'undefined') {
+        const bsModal = new bootstrap.Modal(modalEl);
+        Livewire.on('show-bootstrap-modal', () => bsModal.show());
+        Livewire.on('hide-bootstrap-modal', () => bsModal.hide());
         Livewire.on('refresh-calendar', () => calendar.refetchEvents());
     }
-
+    
     // FILTROS AUTOMÁTICOS
-    const filterIDs = ["filter-tipo", "filter-coach", "filter-estado", "filter-cupo", "filter-hora-inicio", "filter-hora-fin"];
-    filterIDs.forEach(id => {
-        const element = document.getElementById(id);
-        if (element) element.addEventListener("change", () => calendar.refetchEvents());
+    document.querySelectorAll('#filter-tipo, #filter-coach, #filter-estado').forEach(el => {
+        el.addEventListener('change', () => calendar.refetchEvents());
     });
-
-    // FLATPICKR
-    const dateInput = document.getElementById("goto-date");
-    if (dateInput) {
-        flatpickr(dateInput, {
-            locale: "es", dateFormat: "Y-m-d", altInput: true, altFormat: "d/m/Y", allowInput: true,
-            onChange: function(selectedDates, dateStr) { if (dateStr) calendar.gotoDate(dateStr); }
-        });
-    }
-
-    // LIMPIAR HORARIO
-    const btnLimpiarHorario = document.getElementById("btn-limpiar-horario");
-    if (btnLimpiarHorario) {
-        btnLimpiarHorario.addEventListener("click", () => {
-            document.getElementById("filter-hora-inicio").value = "";
-            document.getElementById("filter-hora-fin").value = "";
-            calendar.refetchEvents();
-        });
-    }
 });
 </script>
 
@@ -477,16 +455,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
     /* --- ESTILOS PARA EL POPOVER DE BOOTSTRAP --- */
     .popover-header {
-        background-color: #f8f9fa !important;
-        color: #000 !important;
-        border-bottom: 1px solid #eee !important;
         padding: 0.5rem 0.75rem !important;
+        background-color: transparent !important;
+        border-bottom: 0 !important;
     }
+
     .popover-body {
         padding: 0.75rem !important;
         color: #333;
     }
+
+    .popover {
+        border: 0 !important;
+        overflow: hidden;
+    }
 </style>
 
 @livewire('coach.create-clase-modal')
+@livewire('coach.view-clase-modal')
 @endsection

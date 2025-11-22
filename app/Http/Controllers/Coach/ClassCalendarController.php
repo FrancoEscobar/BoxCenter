@@ -36,6 +36,15 @@ class ClassCalendarController extends Controller
             $query = Clase::with(['tipo_entrenamiento', 'coach'])
                         ->withCount('cuposOcupados');
 
+            // Rango de fechas obligatorio
+        if ($request->has(['start', 'end'])) {
+            // Cortamos la cadena ISO (2025-11-01T00:00...) a (2025-11-01)
+            $start = substr($request->start, 0, 10);
+            $end   = substr($request->end, 0, 10);
+            
+            $query->whereBetween('fecha', [$start, $end]);
+        }
+
             // --- FILTROS ---
             if ($request->filled('tipo')) $query->where('tipo_entrenamiento_id', $request->tipo);
             if ($request->filled('coach')) $query->where('coach_id', $request->coach);
@@ -49,12 +58,15 @@ class ClassCalendarController extends Controller
 
             $events = $clases->map(function ($clase) {
 
+                // Validar que la clase tenga fecha y hora definidas
+                if (!$clase->fecha || !$clase->hora_inicio || !$clase->hora_fin) return null;
+
                 // Colores según estado de la clase
                 $color = match ($clase->estado) {
-                    'programada' => '#3788d8', // Azul
-                    'realizada'  => '#28a745', // Verde
-                    'cancelada'  => '#dc3545', // Rojo
-                    default      => '#6c757d', // Gris
+                    'programada' => '#3788d8', 
+                    'realizada'  => '#28a745', 
+                    'cancelada'  => '#dc3545', 
+                    default      => '#6c757d', 
                 };
 
                 // Formateamos los datos para FullCalendar
@@ -71,13 +83,12 @@ class ClassCalendarController extends Controller
                     // DATOS EXTRA PARA EL DISEÑO
                     'extendedProps' => [
                         'coach'      => $clase->coach->name ?? 'Sin asignar', 
-                        
                         'cupo_total' => $clase->cupo,
                         'inscriptos' => $clase->cupos_ocupados_count,
                         'estado'     => $clase->estado
                     ]
                 ];
-            });
+            })->filter()->values(); // Eliminar nulos y reindexar
 
             return response()->json($events);
         }
