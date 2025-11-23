@@ -302,6 +302,20 @@ document.addEventListener("DOMContentLoaded", function () {
             calendar.refetchEvents();
         });
     }
+
+    // ABRIR MODAL SI VIENE open_id EN LA URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const openId = urlParams.get('open_id');
+
+    if (openId) {
+        // Limpiar la URL para que no se abra de nuevo si se refresca la página
+        window.history.replaceState({}, document.title, window.location.pathname);
+
+        // Disparar el mismo evento de Livewire que se usa en 'eventClick'
+        setTimeout(() => { // Delay para asegurar que todo esté cargado
+            Livewire.dispatch('open-view-modal', { claseId: openId });
+        }, 100);
+    }
 });
 </script>
 
