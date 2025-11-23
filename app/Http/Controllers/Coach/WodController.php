@@ -60,8 +60,15 @@ class WodController extends Controller
             ->with('success', 'WOD creado correctamente');
     }
 
-    public function show(Wod $wod)
-    {
+    public function show($id)
+    {     
+        $wod = Wod::withTrashed()->find($id);
+        
+        if (!$wod) {
+            return redirect()->route('coach.wods.index')
+                ->with('error', 'El WOD que intentas ver no existe.');
+        }
+
         $tipos = TipoEntrenamiento::all();
 
         return view('coach.wods.form', [
@@ -71,8 +78,15 @@ class WodController extends Controller
         ]);
     }
 
-    public function edit(Wod $wod)
-    {
+    public function edit($id)
+    {   
+        $wod = Wod::find($id);
+
+        if (!$wod) {
+            return redirect()->route('coach.wods.index')
+                ->with('error', 'El WOD que buscas no existe o fue eliminado.');
+        }
+
         $this->authorizeWod($wod);
 
         $tipos = TipoEntrenamiento::all();
@@ -80,8 +94,15 @@ class WodController extends Controller
         return view('coach.wods.form', compact('wod', 'tipos'));
     }
 
-    public function update(Request $request, Wod $wod)
-    {
+    public function update(Request $request, $id)
+    {   
+        $wod = Wod::find($id);
+
+        if (!$wod) {
+            return redirect()->route('coach.wods.index')
+                ->with('error', 'No se pudo actualizar el WOD porque no existe.');
+        }
+
         $this->authorizeWod($wod);
 
         $data = $request->validate([
@@ -120,10 +141,17 @@ class WodController extends Controller
         return redirect()->route('coach.wods.index')->with('success', 'WOD actualizado correctamente.');
     }
 
-public function destroy(Wod $wod)
-    {
+    public function destroy($id)
+    {   
+        $wod = Wod::find($id);
+
+        if (!$wod) {
+            return redirect()->route('coach.wods.index')
+                ->with('error', 'No se pudo eliminar el WOD porque no existe.');
+        }
+
         $this->authorizeWod($wod);
-        $wod->ejercicios()->detach(); 
+        
         $wod->delete();
 
         return redirect()->route('coach.wods.index')->with('success', 'WOD eliminado.');

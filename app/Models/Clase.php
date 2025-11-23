@@ -23,9 +23,9 @@ class Clase extends Model
     ];
 
     protected $casts = [
-        'fecha' => 'datetime:Y-m-d',
-        'hora_inicio' => 'datetime:H:i',
-        'hora_fin' => 'datetime:H:i',
+        'fecha' => 'date',
+        'hora_inicio' => 'datetime:H:i:s',
+        'hora_fin' => 'datetime:H:i:s',
     ];
 
     public function tipo_entrenamiento()
@@ -40,6 +40,17 @@ class Clase extends Model
 
     public function wod()
     {
-        return $this->belongsTo(Wod::class, 'wod_id');
+        return $this->belongsTo(Wod::class, 'wod_id')->withTrashed(); // Incluir WODs borrados lógicamente
+    }
+
+    public function asistencias()
+    {
+        return $this->hasMany(Asistencia::class, 'clase_id');
+    }
+
+    public function cuposOcupados()
+    {
+        return $this->hasMany(Asistencia::class, 'clase_id')
+                    ->where('estado', '!=', 'cancelo');
     }
 }

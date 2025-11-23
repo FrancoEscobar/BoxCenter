@@ -18,10 +18,7 @@ Route::middleware(['auth', 'verified', 'role:coach'])
         Route::get('/calendar', [ClassCalendarController::class, 'index'])->name('calendar');
         Route::get('/history', [HistoryController::class, 'index'])->name('history');
 
-        // Clases
-        Route::get('/classes/{id}', [TrainingClassController::class, 'show'])->name('classes.show');
-
-        // --- RUTAS DE WODS
+        // --- RUTAS DE WODS ---
         // 1. Listado
         Route::get('/wods', [WodController::class, 'index'])->name('wods.index');
         // 2. Crear y guardar
@@ -40,4 +37,8 @@ Route::middleware(['auth', 'verified', 'role:coach'])
         Route::delete('/wods/{wod}', [WodController::class, 'destroy'])
             ->name('wods.destroy')
             ->whereNumber('wod');
+
+        // --- RUTAS DE CLASES ---
+        Route::get('/calendar/events', [ClassCalendarController::class, 'events'])
+            ->name('calendar.events');
     });

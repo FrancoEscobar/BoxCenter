@@ -15,6 +15,7 @@ return new class extends Migration {
             $table->integer('duracion')->nullable(); // minutos
             $table->date('fecha_creacion')->nullable();
             $table->timestamps();
+            $table->softDeletes(); // Para borrado lógico 
         });
     }
 

@@ -2,8 +2,7 @@
     <div>
         <div>
             <div class="alert alert-danger">
-                MODO ACTUAL: {{ $modo }} <br>
-                ¿ES EDICIÓN?: {{ $isEditing ? 'SI' : 'NO' }}
+                <strong>Nota:</strong> Los ejercicios se guardan en el orden en que aparecen.
             </div>   
             <!-- Botones -->
             <div class="d-flex gap-2 mt-3">
@@ -137,3 +136,47 @@
         </div>
     </div>
 </div> 
+<script>
+    document.addEventListener('livewire:init', () => {
+        
+        // Referencia al elemento del modal
+        const modalElement = document.getElementById('modalCrearEjercicio');
+        
+        // Variable para guardar la instancia de Bootstrap
+        let bsModal = null;
+
+        // Función para inicializar el modal si no existe
+        const getModal = () => {
+            if (!modalElement) return null;
+            // Usamos window.bootstrap (del CDN)
+            if (!window.bootstrap) {
+                console.error('Bootstrap no está cargado');
+                return null;
+            }
+            // Singleton: Si ya existe la instancia, la usa; si no, la crea.
+            if (!bsModal) {
+                bsModal = new window.bootstrap.Modal(modalElement);
+            }
+            return bsModal;
+        };
+
+        // 1. Escuchar evento para ABRIR
+        Livewire.on('show-bs-modal', () => {
+            const modal = getModal();
+            if (modal) modal.show();
+        });
+
+        // 2. Escuchar evento para CERRAR
+        Livewire.on('hide-bs-modal', () => {
+            const modal = getModal();
+            if (modal) modal.hide();
+        });
+
+        // 3. Limpiar Livewire al cerrar (Resetear formulario)
+        if (modalElement) {
+            modalElement.addEventListener('hidden.bs.modal', () => {
+                Livewire.dispatch('reset-modal-state');
+            });
+        }
+    });
+</script>

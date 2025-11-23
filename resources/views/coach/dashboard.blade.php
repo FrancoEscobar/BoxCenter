@@ -26,7 +26,7 @@
                             </p>
                         </div>
                     </div>
-                    <a href="{{ route('coach.classes.show', $nextClass->id) }}" class="btn btn-light text-primary fw-semibold">
+                    <a href="{{ route('coach.calendar', ['open_id' => $nextClass->id]) }}" class="btn btn-light text-primary fw-semibold">
                         Ver clase
                     </a>
                 </div>
@@ -40,7 +40,7 @@
 
     {{-- Accesos rápidos --}}
     <div class="row g-4">
-        <div class="col-md-3">
+        <div class="col-md-4">
             <a href="{{ route('coach.calendar') }}" class="text-decoration-none">
                 <div class="card h-100 text-center p-4 hover-shadow">
                     <h4>📅 Clases</h4>
@@ -49,7 +49,7 @@
             </a>
         </div>
 
-        <div class="col-md-3">
+        <div class="col-md-4">
             <a href="{{ route('coach.history') }}" class="text-decoration-none">
                 <div class="card h-100 text-center p-4 hover-shadow">
                     <h4>📖 Historial</h4>
@@ -58,20 +58,11 @@
             </a>
         </div>
 
-        <div class="col-md-3">
+        <div class="col-md-4">
             <a href="{{ route('coach.wods.index') }}" class="text-decoration-none">
                 <div class="card h-100 text-center p-4 hover-shadow">
                     <h4>🏋️‍♂️ WODs</h4>
                     <p class="text-muted mb-0">Crea o edita WODs</p>
-                </div>
-            </a>
-        </div>
-
-        <div class="col-md-3">
-            <a href="" class="text-decoration-none">
-                <div class="card h-100 text-center p-4 hover-shadow">
-                    <h4>⚙️ Ajustes</h4>
-                    <p class="text-muted mb-0">Configura tu perfil y preferencias</p>
                 </div>
             </a>
         </div>
