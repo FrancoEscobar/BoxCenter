@@ -6,7 +6,7 @@ services:
     container_name: boxcenter_app
     restart: unless-stopped
     volumes:
-      - ./:/var/www
+      - ./:/var/www:cached
     ports:
       - "8000:80"     # Nginx
       - "5173:5173"   # Vite dev server

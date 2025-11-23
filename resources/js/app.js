@@ -1,10 +1,7 @@
 import './bootstrap';
 
-import 'bootstrap/dist/css/bootstrap.min.css';
-import 'bootstrap';
+// Comente esto para que no haya conflicto con Bootstrap 5 que se carga por CDN
+// import 'bootstrap/dist/css/bootstrap.min.css';
+// import * as bootstrap from 'bootstrap';
 
-import Alpine from 'alpinejs';
-
-window.Alpine = Alpine;
-
-Alpine.start();
+// window.bootstrap = bootstrap;

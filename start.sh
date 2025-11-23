@@ -24,22 +24,13 @@ if [ -z "$(php artisan key:generate --show)" ]; then
 fi
 
 # Ejecutar migraciones y seeders solo si la tabla 'users' no existe
-if ! php artisan migrate:status | grep -q "users"; then
-  echo "⚙️ Ejecutando migraciones y seeders..."
-  php artisan migrate:fresh --seed --force
-else
-  echo "✅ Migraciones ya aplicadas, saltando migrate:fresh"
-fi
+php artisan migrate:fresh --seed --force
 
 # Instalar dependencias Node si faltan
 if [ ! -d "node_modules" ]; then
   echo "📦 Instalando dependencias de Node..."
   npm install
 fi
-
-# # Iniciar Vite en segundo plano en todas las interfaces
-# echo "💡 Iniciando servidor de Vite (desarrollo)..."
-# npm run dev
 
 # Iniciar Nginx y PHP-FPM con Supervisor
 echo "🚀 Iniciando Nginx y PHP-FPM..."

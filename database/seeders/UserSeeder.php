@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
-use App\Models\Role; // Asegurate de tener el modelo Role
+use App\Models\Role;
 
 class UserSeeder extends Seeder
 {
@@ -18,26 +18,38 @@ class UserSeeder extends Seeder
 
         // Admin
         User::create([
-            'name'     => 'Administrador',
-            'email'    => 'admin@boxcenter.com',
-            'password' => Hash::make('admin123'),
             'rol_id'   => $adminRoleId,
+            'name'     => 'Administrador',
+            'apellido' => 'BoxCenter',
+            'email'    => 'admin@boxcenter.com',
+            'dni'      => '12345678',
+            'telefono'  => '3704123456',
+            'fecha_nacimiento' => '2003-08-14',
+            'password' => Hash::make('password')
         ]);
 
         // Coach
         User::create([
-            'name'     => 'Coach Franco',
-            'email'    => 'coach@boxcenter.com',
-            'password' => Hash::make('coach123'),
             'rol_id'   => $coachRoleId,
+            'name'     => 'Coach',
+            'apellido' => 'BoxCenter',
+            'email'    => 'coach@boxcenter.com',
+            'dni'      => '87654321',
+            'telefono'  => '3704123456',
+            'fecha_nacimiento' => '2000-05-20',
+            'password' => Hash::make('password')
         ]);
 
-        // Athlete
+        // Atleta
         User::create([
-            'name'     => 'Atleta Juan',
-            'email'    => 'atleta@boxcenter.com',
-            'password' => Hash::make('atleta123'),
             'rol_id'   => $atletaRoleId,
+            'name'     => 'Atleta',
+            'apellido' => 'BoxCenter',
+            'email'    => 'atleta@boxcenter.com',
+            'dni'      => '56781234',
+            'telefono'  => '3704123456',
+            'fecha_nacimiento' => '2003-08-14',
+            'password' => Hash::make('password')
         ]);
     }
 }

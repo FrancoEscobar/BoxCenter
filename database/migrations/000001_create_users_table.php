@@ -12,6 +12,7 @@ return new class extends Migration {
             $table->string('name');
             $table->string('apellido', 100)->nullable();
             $table->string('email')->unique();
+            $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->string('dni', 10)->unique()->nullable();
             $table->string('telefono', 20)->nullable();

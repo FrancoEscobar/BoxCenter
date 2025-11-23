@@ -8,7 +8,7 @@ return new class extends Migration {
     public function up(): void {
         Schema::create('wod_ejercicio', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('wod_id')->constrained('wods')->onDelete('cascade');
+            $table->foreignId('wod_id')->constrained('wods')->onDelete('restrict');
             $table->foreignId('ejercicio_id')->constrained('ejercicios')->onDelete('cascade');
             $table->integer('orden')->default(1);
             $table->integer('series')->nullable();
