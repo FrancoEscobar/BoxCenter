@@ -116,6 +116,21 @@ class ViewClaseModal extends Component
         $this->showUsers = !$this->showUsers;
     }
 
+    public function deleteClase()
+    {
+        // Verificaciones de seguridad
+        if (!$this->clase || $this->clase->estado !== 'cancelada') {
+            return;
+        }
+
+        // Eliminar
+        $this->clase->delete();
+
+        // Cerrar modal y refrescar
+        $this->dispatch('hide-view-modal');
+        $this->dispatch('refresh-calendar');
+    }
+
     public function render()
     {
         return view('livewire.coach.view-clase-modal');

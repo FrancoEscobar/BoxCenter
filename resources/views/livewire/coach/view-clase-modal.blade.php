@@ -171,10 +171,18 @@
                 @else
                     <div class="me-auto">
                         @if($clase->estado === 'cancelada')
+                            {{-- Botón Reactivar --}}
                             <button class="btn btn-success text-white btn-sm" 
                                 onclick="confirm('¿Estás seguro de reactivar esta clase?') || event.stopImmediatePropagation()"
                                 wire:click="toggleEstadoClase">
-                                <i class="bi bi-check-circle me-1"></i> Habilitar Clase
+                                <i class="bi bi-check-circle me-1"></i> Habilitar
+                            </button>
+
+                            {{-- Botón Eliminar --}}
+                            <button class="btn btn-danger text-white btn-sm" 
+                                wire:click="deleteClase"
+                                wire:confirm="¿Estás seguro de eliminar esta clase DEFINITIVAMENTE? Esta acción no se puede deshacer.">
+                                <i class="bi bi-trash-fill me-1"></i> Eliminar
                             </button>
                         @else
                             <button class="btn btn-outline-danger btn-sm" 
@@ -241,6 +249,17 @@
                     });
                 }
             }, 100); // 100ms de retardo
+        });
+
+        //Ocultar el Modal
+        Livewire.on('hide-view-modal', () => {
+            const modalEl = document.getElementById('viewClaseModal');
+            if (modalEl) {
+                const bsModal = bootstrap.Modal.getInstance(modalEl);
+                if (bsModal) {
+                    bsModal.hide();
+                }
+            }
         });
 
     });
