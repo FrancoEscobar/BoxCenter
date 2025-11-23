@@ -40,7 +40,7 @@ class Clase extends Model
 
     public function wod()
     {
-        return $this->belongsTo(Wod::class, 'wod_id');
+        return $this->belongsTo(Wod::class, 'wod_id')->withTrashed(); // Incluir WODs borrados lógicamente
     }
 
     public function asistencias()
