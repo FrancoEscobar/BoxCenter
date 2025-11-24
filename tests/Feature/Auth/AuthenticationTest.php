@@ -3,61 +3,145 @@
 namespace Tests\Feature\Auth;
 
 use App\Models\User;
-use App\Models\Role;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
-use Database\Seeders\RoleSeeder;
 
 class AuthenticationTest extends TestCase
 {
     use RefreshDatabase;
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->seed(RoleSeeder::class);
-    }
 
-
-    public function test_login_screen_can_be_rendered(): void
+    public function test_users_can_authenticate_with_valid_credentials(): void
     {
-        $response = $this->get('/login');
-        $response->assertStatus(200);
-    }
-
-    public function test_user_can_login_with_correct_credentials(): void
-    {
-        $role = Role::where('nombre', 'atleta')->firstOrFail();
         $user = User::factory()->create([
-            'email' => 'franco@example.com',
-            'password' => bcrypt('password'),
-            'rol_id' => $role->id,
+            'email' => 'test@example.com',
+            'password' => bcrypt('password123'),
         ]);
 
         $response = $this->post('/login', [
-            'email' => $user->email,
-            'password' => 'password',
+            'email' => 'test@example.com',
+            'password' => 'password123',
         ]);
 
-        $response->assertRedirect($user->redirectToDashboard());
-        $this->assertAuthenticatedAs($user);
+        $this->assertAuthenticated();
+        $response->assertRedirect('/home');
     }
 
-    public function test_user_cannot_login_with_invalid_credentials(): void
+    public function test_users_cannot_authenticate_with_invalid_password(): void
     {
-        $role = Role::where('nombre', 'atleta')->first();
         $user = User::factory()->create([
-            'email' => 'franco@example.com',
-            'password' => bcrypt('password'),
-            'rol_id' => $role->id,
+            'email' => 'test@example.com',
+            'password' => bcrypt('password123'),
         ]);
 
-        $response = $this->from('/login')->post('/login', [
-            'email' => $user->email,
+        $response = $this->post('/login', [
+            'email' => 'test@example.com',
             'password' => 'wrong-password',
         ]);
 
-        $response->assertRedirect('/login');
-        $response->assertSessionHasErrors('email');
         $this->assertGuest();
+        $response->assertSessionHasErrors('email');
+    }
+
+    public function test_users_cannot_authenticate_with_invalid_email(): void
+    {
+        $response = $this->post('/login', [
+            'email' => 'nonexistent@example.com',
+            'password' => 'password123',
+        ]);
+
+        $this->assertGuest();
+        $response->assertSessionHasErrors('email');
+    }
+
+    public function test_authenticated_session_can_be_destroyed(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->post('/logout');
+
+        $this->assertGuest();
+        $response->assertRedirect('/');
+    }
+
+    public function test_login_redirects_based_on_user_role_through_http(): void
+    {
+        // Test admin
+        $adminRole = \App\Models\Role::factory()->create(['nombre' => 'admin']);
+        $admin = User::factory()->create([
+            'email' => 'admin@example.com',
+            'password' => bcrypt('password123'),
+            'rol_id' => $adminRole->id,
+        ]);
+
+        $response = $this->post('/login', [
+            'email' => 'admin@example.com',
+            'password' => 'password123',
+        ]);
+
+        $this->assertAuthenticated();
+        $response->assertRedirect(route('admin.dashboard'));
+        
+        // Logout
+        $this->post('/logout');
+
+        // Test coach
+        $coachRole = \App\Models\Role::factory()->create(['nombre' => 'coach']);
+        $coach = User::factory()->create([
+            'email' => 'coach@example.com',
+            'password' => bcrypt('password123'),
+            'rol_id' => $coachRole->id,
+        ]);
+
+        $response = $this->post('/login', [
+            'email' => 'coach@example.com',
+            'password' => 'password123',
+        ]);
+
+        $this->assertAuthenticated();
+        $response->assertRedirect(route('coach.dashboard'));
+    }
+
+    public function test_athlete_login_flow_integrates_with_membership_system(): void
+    {
+        $athleteRole = \App\Models\Role::factory()->create(['nombre' => 'atleta']);
+        
+        // Test atleta sin membresía
+        $athleteWithoutMembership = User::factory()->create([
+            'email' => 'athlete1@example.com',
+            'password' => bcrypt('password123'),
+            'rol_id' => $athleteRole->id,
+        ]);
+
+        $response = $this->post('/login', [
+            'email' => 'athlete1@example.com',
+            'password' => 'password123',
+        ]);
+
+        $response->assertRedirect(route('athlete.planselection'));
+        
+        $this->post('/logout');
+
+        // Test atleta con membresía activa
+        $athleteWithMembership = User::factory()->create([
+            'email' => 'athlete2@example.com',
+            'password' => bcrypt('password123'),
+            'rol_id' => $athleteRole->id,
+        ]);
+
+        $plan = \App\Models\Plan::factory()->create();
+        \App\Models\Membresia::factory()->create([
+            'usuario_id' => $athleteWithMembership->id,
+            'plan_id' => $plan->id,
+            'estado' => 'activa',
+            'fecha_inicio' => now(),
+            'fecha_vencimiento' => now()->addMonth(),
+        ]);
+
+        $response = $this->post('/login', [
+            'email' => 'athlete2@example.com',
+            'password' => 'password123',
+        ]);
+
+        $response->assertRedirect(route('athlete.dashboard'));
     }
 }
