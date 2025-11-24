@@ -15,7 +15,7 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            'rol_id' => Role::factory(), // por defecto crea un rol si no se pasa
+            'rol_id' => null, // será asignado por withRole o manualmente
             'name' => $this->faker->firstName,
             'apellido' => $this->faker->lastName,
             'email' => $this->faker->unique()->safeEmail(),
@@ -29,11 +29,14 @@ class UserFactory extends Factory
     }
 
     // Método para asignar un rol específico
-    public function withRole(string $roleName): static
+    public function withRole($role): static
     {
-        return $this->state(function () use ($roleName) {
-            $role = Role::firstOrCreate(['nombre' => $roleName]);
-            return ['rol_id' => $role->id];
+        return $this->state(function () use ($role) {
+            if (is_string($role)) {
+                $roleModel = Role::factory()->create(['nombre' => $role]);
+                return ['rol_id' => $roleModel->id];
+            }
+            return ['rol_id' => is_object($role) ? $role->id : $role];
         });
     }
 }
