@@ -27,7 +27,7 @@ COPY composer.json composer.lock ./
 COPY package.json package-lock.json ./
 
 # 6. Instalar dependencias de PHP (Esto solucionará tu error)
-RUN composer install --no-dev --optimize-autoloader --no-interaction
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
 
 # 7. Instalar dependencias de Node y construir assets (Vite/Mix)
 RUN npm install && npm run build
@@ -35,9 +35,11 @@ RUN npm install && npm run build
 # 8. Copiar el resto del proyecto
 COPY . .
 
-# 9. Permisos (Importante para Laravel)
+# 9. Permisos
 RUN chown -R www-data:www-data /var/www \
     && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
+
+RUN composer dump-autoload --optimize
 
 # ----------------------------------------
 
