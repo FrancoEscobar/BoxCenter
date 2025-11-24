@@ -24,3 +24,7 @@ Homestead.yaml
 Thumbs.db
 /dbdata
 /docker/*.log
+coverage-report/
+database/testing.sqlite
+test-report.txt
+.env.dusk.local
