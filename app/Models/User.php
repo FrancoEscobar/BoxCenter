@@ -73,7 +73,7 @@ class User extends Authenticatable
             }
 
             // Vencida (por estado o por fecha)
-            if ($membresia->estado === 'vencida' || ($membresia->fecha_fin && $membresia->fecha_fin < now())) {
+            if ($membresia->estado === 'vencida' || ($membresia->fecha_vencimiento && $membresia->fecha_vencimiento < now())) {
                 return route('athlete.planselection');
             }
 
