@@ -22,4 +22,4 @@ php artisan migrate --force
 
 # 5. Iniciar Supervisor (que a su vez inicia Nginx y PHP)
 echo "Starting Supervisor..."
-/usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
+exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
