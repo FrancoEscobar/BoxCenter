@@ -1,37 +1,25 @@
-#!/bin/bash
+#!/bin/sh
 
-echo "🟢 Iniciando entorno de desarrollo BoxCenter..."
+# Salir si hay errores
+set -e
 
-# Esperar a que MySQL esté listo
-echo "⏳ Esperando a que la base de datos esté lista..."
-sleep 10
+# 1. Ajustar permisos 
+chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
-# Instalar dependencias PHP si faltan
-if [ ! -d "vendor" ]; then
-  echo "🎼 Instalando dependencias con Composer..."
-  composer install --no-interaction --prefer-dist --optimize-autoloader
-fi
+# 2. Caché de configuración y rutas
+echo "Caching config..."
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
 
-# Generar APP_KEY si no existe
-if [ ! -f "artisan" ]; then
-  echo "❌ Archivo artisan no encontrado, verifica que estés en la raíz del proyecto."
-  exit 1
-fi
+# 3. Enlace simbólico para imágenes (Storage)
+echo "Linking storage..."
+php artisan storage:link || true
 
-if [ -z "$(php artisan key:generate --show)" ]; then
-  echo "🔑 Generando APP_KEY..."
-  php artisan key:generate
-fi
+# 4. Correr migraciones
+echo "Running migrations..."
+php artisan migrate --force
 
-# Ejecutar migraciones y seeders solo si la tabla 'users' no existe
-php artisan migrate:fresh --seed --force
-
-# Instalar dependencias Node si faltan
-if [ ! -d "node_modules" ]; then
-  echo "📦 Instalando dependencias de Node..."
-  npm install
-fi
-
-# Iniciar Nginx y PHP-FPM con Supervisor
-echo "🚀 Iniciando Nginx y PHP-FPM..."
-exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
+# 5. Iniciar Supervisor (que a su vez inicia Nginx y PHP)
+echo "Starting Supervisor..."
+/usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
