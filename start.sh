@@ -1,25 +1,36 @@
 #!/bin/sh
 
-# Salir si hay errores
 set -e
 
-# 1. Ajustar permisos 
-chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+echo "🔴 --- INICIO DE DEBUG ---"
 
-# 2. Caché de configuración y rutas
-echo "Caching config..."
+# 1. Verificar que los archivos de config existen
+echo "🔍 Verificando archivos de configuración..."
+ls -la /etc/supervisor/conf.d/supervisord.conf
+ls -la /etc/nginx/sites-available/default
+
+# 2. Probar la configuración de Nginx (sin arrancarlo)
+echo "🧪 Probando configuración de Nginx..."
+nginx -t
+
+# 3. Ajustar permisos
+echo "🔧 Ajustando permisos..."
+chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+chmod -R 775 /var/www/storage /var/www/bootstrap/cache
+
+# 4. Tareas de Laravel
+echo "🧹 Cacheando configuración..."
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 
-# 3. Enlace simbólico para imágenes (Storage)
-echo "Linking storage..."
+echo "🔗 Linkeando storage..."
 php artisan storage:link || true
 
-# 4. Correr migraciones
-echo "Running migrations..."
+echo "🗄️ Ejecutando migraciones..."
 php artisan migrate --force
 
-# 5. Iniciar Supervisor (que a su vez inicia Nginx y PHP)
-echo "Starting Supervisor..."
-exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
+echo "🟢 --- FIN DE DEBUG (Iniciando Supervisor) ---"
+
+# 5. Arrancar Supervisor (SIN 'exec' temporalmente para ver si escupe error al salir)
+/usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
