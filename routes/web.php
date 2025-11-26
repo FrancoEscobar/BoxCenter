@@ -5,10 +5,14 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Livewire\MembershipSelector;
 use App\Http\Controllers\Athlete\MercadoPagoWebhookController;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Support\Facades\Broadcast;
 
 Route::get('/', function () {
     return view('welcome');
 });
+
+// Broadcasting auth routes
+Broadcast::routes(['middleware' => ['web', 'auth']]);
 
 // Rutas Breeze
 require __DIR__.'/auth.php';

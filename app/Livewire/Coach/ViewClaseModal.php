@@ -7,6 +7,9 @@ use App\Models\Clase;
 use App\Models\User;
 use App\Models\Role;
 use Livewire\Attributes\On;
+use App\Events\ClaseCancelada;
+use App\Notifications\ClaseCanceladaNotification;
+use Illuminate\Support\Facades\Notification;
 
 class ViewClaseModal extends Component
 {
@@ -104,7 +107,25 @@ class ViewClaseModal extends Component
         if ($this->clase->estado === 'cancelada') {
             $this->clase->update(['estado' => 'programada']);
         } else {
+            // Obtener usuarios con reservas en esta clase
+            $usuariosAfectados = $this->clase->asistencias()
+                ->where('estado', 'reservo')
+                ->with('usuario')
+                ->get()
+                ->pluck('usuario');
+
+            // Cancelar la clase
             $this->clase->update(['estado' => 'cancelada']);
+
+            // Si hay usuarios afectados, enviar notificaciones
+            if ($usuariosAfectados->isNotEmpty()) {
+                // Enviar notificaciones a cada usuario
+                Notification::send($usuariosAfectados, new ClaseCanceladaNotification($this->clase));
+
+                // Disparar evento de broadcasting
+                $usuariosIds = $usuariosAfectados->pluck('id')->toArray();
+                event(new ClaseCancelada($this->clase, $usuariosIds));
+            }
         }
 
         $this->dispatch('refresh-calendar');
