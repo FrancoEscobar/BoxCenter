@@ -18,8 +18,9 @@
     <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-white">
         
         <div>
-            <a href="/">
-            <img src="{{ asset('LOGO LEGION.jpeg') }}" alt="Logo" class="w-30 h-20 object-contain">
+            <a href="{{ route('welcome.box') }}">
+            <img src="{{ asset('images/logo-legion.jpeg') }}" alt="Logo" class="w-30 h-20 object-contain">
+            </a>
         </div>
 
         <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg">

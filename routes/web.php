@@ -57,3 +57,8 @@ Route::get('/athlete/payment/status/{payment_id}', [\App\Http\Controllers\Athlet
 Route::get('/test-wod-create', function() {
     return app()->call('App\Http\Controllers\Coach\WodController@create');
 });
+
+//Pagina de Bienvenida
+Route::get('/bienvenida', function () {
+    return view('welcome-box');
+})->name('welcome.box');
