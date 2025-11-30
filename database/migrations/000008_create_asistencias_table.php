@@ -10,7 +10,7 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('clase_id')->constrained('clases')->onDelete('cascade');
             $table->foreignId('usuario_id')->constrained('users')->onDelete('cascade');
-            $table->enum('estado', ['asistio', 'ausente', 'cancelo'])->default('ausente');
+            $table->enum('estado', ['reservo', 'asistio', 'ausente', 'cancelo'])->default('reservo');
             $table->timestamps();
         });
     }
