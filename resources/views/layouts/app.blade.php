@@ -11,13 +11,16 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://npmcdn.com/flatpickr/dist/l10n/es.js"></script>
+    
+    <!-- SortableJS -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
 </head>
 <body class="bg-light">
 
-    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm px-4">
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm px-4 fixed-top">
         <a class="navbar-brand fw-bold" href="{{ auth()->check() ? route('dashboard') : url('/') }}">
             BoxCenter
         </a>
@@ -68,7 +71,7 @@
         </div>
     </nav>
 
-    <main class="container py-5">
+    <main class="container py-5" style="margin-top: 56px;">
         @yield('content')
     </main>
 

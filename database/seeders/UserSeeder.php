@@ -40,7 +40,7 @@ class UserSeeder extends Seeder
             'password' => Hash::make('password')
         ]);
 
-        // Atleta
+        // Atleta con membresía activa
         User::create([
             'rol_id'   => $atletaRoleId,
             'name'     => 'Atleta',
@@ -49,6 +49,30 @@ class UserSeeder extends Seeder
             'dni'      => '56781234',
             'telefono'  => '3704123456',
             'fecha_nacimiento' => '2003-08-14',
+            'password' => Hash::make('password')
+        ]);
+
+        // Atleta con membresía vencida
+        User::create([
+            'rol_id'   => $atletaRoleId,
+            'name'     => 'María',
+            'apellido' => 'García',
+            'email'    => 'maria.garcia@boxcenter.com',
+            'dni'      => '45123678',
+            'telefono'  => '3704567890',
+            'fecha_nacimiento' => '1995-03-15',
+            'password' => Hash::make('password')
+        ]);
+
+        // Atleta sin membresía
+        User::create([
+            'rol_id'   => $atletaRoleId,
+            'name'     => 'Juan',
+            'apellido' => 'Pérez',
+            'email'    => 'juan.perez@boxcenter.com',
+            'dni'      => '39876543',
+            'telefono'  => '3704123789',
+            'fecha_nacimiento' => '1998-11-22',
             'password' => Hash::make('password')
         ]);
     }

@@ -43,6 +43,7 @@
                         </div>
                     </div>
 
+                    @if(!($claseSeleccionada->es_historial ?? false))
                     <div class="detail-item">
                         <i class="bi bi-people text-primary"></i>
                         <div>
@@ -50,8 +51,26 @@
                             <strong>{{ $claseSeleccionada->cupos }} de {{ $claseSeleccionada->cupo_total }} disponibles</strong>
                         </div>
                     </div>
+                    @endif
 
-                    @if($claseSeleccionada->reservada)
+                    @if($claseSeleccionada->es_historial ?? false)
+                    <div class="detail-item">
+                        <i class="bi bi-journal-check text-primary"></i>
+                        <div>
+                            <small class="text-muted d-block">Estado</small>
+                            @php
+                                $estado = $claseSeleccionada->asistencia_estado ?? null;
+                                $texto = match($estado) {
+                                    'asistio' => 'Asististe',
+                                    'ausente' => 'No asististe',
+                                    default => 'Reservada',
+                                };
+                                $claseTexto = $estado === 'asistio' ? 'text-success' : ($estado === 'ausente' ? 'text-danger' : 'text-primary');
+                            @endphp
+                            <strong class="{{ $claseTexto }}">{{ $texto }}</strong>
+                        </div>
+                    </div>
+                    @elseif($claseSeleccionada->reservada)
                     <div class="detail-item">
                         <i class="bi bi-check-circle-fill text-success"></i>
                         <div>
@@ -63,6 +82,7 @@
                 </div>
 
                 {{-- Footer --}}
+                @unless($accionesDeshabilitadas ?? false)
                 <div class="modal-footer">
                     @if($claseSeleccionada->reservada)
                         <button wire:click="cancelarReserva({{ $claseSeleccionada->id }})" 
@@ -81,6 +101,7 @@
                         </button>
                     @endif
                 </div>
+                @endunless
             </div>
         @endif
     </div>

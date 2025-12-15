@@ -13,7 +13,10 @@ class AvaliableClasses extends Component
     public $dias = [];
     public $diaSeleccionado;
     public $clasesDelDia = [];
+    public $clasesHistorial = [];
     public $claseSeleccionada = null;
+    public $vistaActiva = 'disponibles';
+    public $accionesDeshabilitadas = false;
 
     public function mount()
     {
@@ -24,29 +27,69 @@ class AvaliableClasses extends Component
 
         $this->diaSeleccionado = Carbon::today()->toDateString();
         $this->cargarClases();
+        $this->cargarHistorial();
+    }
+
+    public function cambiarVista($vista)
+    {
+        $this->vistaActiva = $vista;
+
+        if ($vista === 'disponibles') {
+            $this->dias = collect(range(0, 59))->map(function ($i) {
+                return Carbon::today()->addDays($i);
+            });
+        } else {
+            // Últimos 60 días incluyendo hoy (ordenados de más antiguo a hoy)
+            $this->dias = collect(range(0, 59))->map(function ($i) {
+                return Carbon::today()->subDays(59 - $i);
+            });
+        }
+
+        $this->diaSeleccionado = Carbon::today()->toDateString();
+        $this->cargarClases();
+        $this->cargarHistorial();
     }
 
     public function cambiarDia($fecha)
     {
         $this->diaSeleccionado = $fecha;
+        // Recalcular rango de días según la vista activa para mantener el orden esperado
+        if ($this->vistaActiva === 'disponibles') {
+            $this->dias = collect(range(0, 59))->map(function ($i) {
+                return Carbon::today()->addDays($i);
+            });
+        } else {
+            $this->dias = collect(range(0, 59))->map(function ($i) {
+                return Carbon::today()->subDays(59 - $i);
+            });
+        }
+
         $this->cargarClases();
+        $this->cargarHistorial();
     }
 
-    public function abrirModal($claseId)
+    public function abrirModal($claseId, $desdeHistorial = false)
     {
-        $clase = collect($this->clasesDelDia)->firstWhere('id', $claseId);
+        $coleccion = $desdeHistorial ? $this->clasesHistorial : $this->clasesDelDia;
+        $clase = collect($coleccion)->firstWhere('id', $claseId);
         $this->claseSeleccionada = $clase;
+        $this->accionesDeshabilitadas = (bool) $desdeHistorial;
         $this->dispatch('abrir-modal');
     }
 
     public function cerrarModal()
     {
         $this->claseSeleccionada = null;
+        $this->accionesDeshabilitadas = false;
         $this->dispatch('cerrar-modal');
     }
 
     public function cargarClases()
     {
+        if ($this->vistaActiva !== 'disponibles') {
+            return;
+        }
+
         $clases = Clase::whereDate('fecha', $this->diaSeleccionado)
             ->where('estado', 'programada')
             ->with(['tipo_entrenamiento', 'coach'])
@@ -74,6 +117,50 @@ class AvaliableClasses extends Component
                 'cupos' => $cuposDisponibles,
                 'cupo_total' => $clase->cupo,
                 'reservada' => in_array($clase->id, $reservasUsuario),
+                'es_historial' => false,
+            ];
+        })->toArray();
+    }
+
+    public function cargarHistorial()
+    {
+        if ($this->vistaActiva !== 'historial') {
+            $this->clasesHistorial = [];
+            return;
+        }
+
+        $clases = Clase::whereDate('fecha', $this->diaSeleccionado)
+            ->where('fecha', '<', Carbon::today())
+            ->whereHas('asistencias', function ($query) {
+                $query->where('usuario_id', Auth::id())
+                    ->whereIn('estado', ['asistio', 'ausente', 'reservo']);
+            })
+            ->with(['tipo_entrenamiento', 'coach', 'asistencias' => function ($query) {
+                $query->where('usuario_id', Auth::id());
+            }])
+            ->withCount(['cuposOcupados' => function ($query) {
+                $query->where('estado', '!=', 'cancelo');
+            }])
+            ->orderBy('fecha', 'desc')
+            ->orderBy('hora_inicio', 'desc')
+            ->get();
+
+        $this->clasesHistorial = $clases->map(function ($clase) {
+            $cuposDisponibles = $clase->cupo - $clase->cupos_ocupados_count;
+            $asistencia = $clase->asistencias->first();
+
+            return (object) [
+                'id' => $clase->id,
+                'fecha' => $clase->fecha->format('d/m/Y'),
+                'hora_inicio' => $clase->hora_inicio->format('H:i'),
+                'hora_fin' => $clase->hora_fin->format('H:i'),
+                'tipo' => $clase->tipo_entrenamiento->nombre ?? 'Clase',
+                'coach' => $clase->coach->name ?? 'Sin asignar',
+                'cupos' => $cuposDisponibles,
+                'cupo_total' => $clase->cupo,
+                'reservada' => $asistencia?->estado === 'reservo',
+                'asistencia_estado' => $asistencia?->estado,
+                'es_historial' => true,
             ];
         })->toArray();
     }

@@ -1,86 +1,110 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container py-5">
-    <div class="mb-5">
-        <h2 class="fw-bold">👋 Hola, {{ Auth::user()->name }}</h2>
-        <p class="text-muted">Bienvenido a tu panel de entrenador</p>
-    </div>
-
-    {{-- Banner de próxima clase --}}
-    @if(isset($nextClass))
-        <div class="position-relative mb-5">
-            <div class="card border-0 shadow-sm bg-primary text-white rounded-4 overflow-hidden">
-                <div class="card-body d-flex flex-column flex-md-row align-items-md-center justify-content-between p-3">
-                    <div class="d-flex align-items-center mb-3 mb-md-0">
-                        <div class="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center me-3" 
-                            style="width: 60px; height: 60px;">
-                            <i class="bi bi-calendar-event fs-3"></i>
-                        </div>
-                        <div>
-                            <h5 class="fw-bold mb-1">Tu próxima clase</h5>
-                            <p class="mb-0">
-                                <strong>{{ \Carbon\Carbon::parse($nextClass->fecha)->translatedFormat('l j \d\e F') }}</strong> — 
-                                {{ \Carbon\Carbon::parse($nextClass->hora_inicio)->format('H:i') }} a {{ \Carbon\Carbon::parse($nextClass->hora_fin)->format('H:i') }}<br>
-                                <small class="text-white-50">Tipo: {{ $nextClass->tipo_entrenamiento->nombre ?? 'General' }}</small>
-                            </p>
-                        </div>
-                    </div>
-                    <a href="{{ route('coach.calendar', ['open_id' => $nextClass->id]) }}" class="btn btn-light text-primary fw-semibold">
-                        Ver clase
-                    </a>
+{{-- Contenedor de notificaciones --}}
+<div x-data="notificationHandler()" x-init="initEcho()" class="fixed top-20 right-4 z-50 space-y-2">
+    <template x-for="notification in notifications" :key="notification.id">
+        <div x-show="notification.show" 
+             x-transition:enter="transform transition ease-out duration-300"
+             x-transition:enter-start="translate-x-full opacity-0"
+             x-transition:enter-end="translate-x-0 opacity-100"
+             x-transition:leave="transform transition ease-in duration-200"
+             x-transition:leave-start="translate-x-0 opacity-100"
+             x-transition:leave-end="translate-x-full opacity-0"
+             class="bg-red-500 text-white px-6 py-4 rounded-lg shadow-lg max-w-md">
+            <div class="flex items-start">
+                <div class="flex-shrink-0">
+                    <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
                 </div>
+                <div class="ml-3 flex-1">
+                    <p class="text-sm font-medium">Clase Cancelada</p>
+                    <p class="mt-1 text-sm" x-text="notification.mensaje"></p>
+                </div>
+                <button @click="removeNotification(notification.id)" class="ml-4 flex-shrink-0">
+                    <svg class="h-5 w-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                </button>
             </div>
         </div>
-    @else
-        <div class="alert alert-secondary text-center p-4 mb-5 rounded-4 shadow-sm">
-            <h5 class="mb-0">No tienes clases programadas próximamente 🕓</h5>
-        </div>
-    @endif
-
-    {{-- Accesos rápidos --}}
-    <div class="row g-4">
-        <div class="col-md-4">
-            <a href="{{ route('coach.calendar') }}" class="text-decoration-none">
-                <div class="card h-100 text-center p-4 hover-shadow">
-                    <h4>📅 Clases</h4>
-                    <p class="text-muted mb-0">Calendario y gestión de clases</p>
-                </div>
-            </a>
-        </div>
-
-        <div class="col-md-4">
-            <a href="{{ route('coach.history') }}" class="text-decoration-none">
-                <div class="card h-100 text-center p-4 hover-shadow">
-                    <h4>📖 Historial</h4>
-                    <p class="text-muted mb-0">Consulta tus clases pasadas</p>
-                </div>
-            </a>
-        </div>
-
-        <div class="col-md-4">
-            <a href="{{ route('coach.wods.index') }}" class="text-decoration-none">
-                <div class="card h-100 text-center p-4 hover-shadow">
-                    <h4>🏋️‍♂️ WODs</h4>
-                    <p class="text-muted mb-0">Crea o edita WODs</p>
-                </div>
-            </a>
-        </div>
-    </div>
+    </template>
 </div>
 
-{{-- Estilos --}}
+{{-- Banner de próxima clase (componente Livewire) --}}
+<livewire:coach.next-class-banner/>
+
+<div>
+    {{-- Clases programadas con modales de creación y detalles incluidos --}}
+    <livewire:coach.myclasses-schedule/>
+</div>
+
+{{-- Estilos globales --}}
 <style>
     .hover-shadow {
         transition: all 0.25s ease-in-out;
     }
     .hover-shadow:hover {
         transform: translateY(-5px);
-        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+        box-shadow: 0 3px 10px rgba(0,0,0,0.12);
     }
 
-    .bg-primary {
-        background: linear-gradient(135deg, #4e73df, #224abe);
+    .card:active {
+        transform: scale(0.98);
+        transition: 0.1s;
     }
 </style>
+
+<script>
+function notificationHandler() {
+    return {
+        notifications: [],
+        nextId: 1,
+
+        initEcho() {
+            if (typeof Echo === 'undefined') {
+                console.error('Laravel Echo no está configurado');
+                return;
+            }
+
+            const userId = {{ auth()->id() }};
+            
+            // Escuchar notificaciones en el canal privado del usuario
+            Echo.private(`user.${userId}`)
+                .listen('.clase.cancelada', (data) => {
+                    console.log('Notificación recibida:', data);
+                    this.addNotification(data.mensaje);
+                    
+                    // Refrescar los componentes Livewire
+                    Livewire.dispatch('refresh-calendar');
+                });
+        },
+
+        addNotification(mensaje) {
+            const id = this.nextId++;
+            this.notifications.push({
+                id: id,
+                mensaje: mensaje,
+                show: true
+            });
+
+            // Auto-ocultar después de 10 segundos
+            setTimeout(() => {
+                this.removeNotification(id);
+            }, 10000);
+        },
+
+        removeNotification(id) {
+            const index = this.notifications.findIndex(n => n.id === id);
+            if (index !== -1) {
+                this.notifications[index].show = false;
+                setTimeout(() => {
+                    this.notifications.splice(index, 1);
+                }, 200);
+            }
+        }
+    }
+}
+</script>
 @endsection
