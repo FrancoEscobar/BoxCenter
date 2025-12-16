@@ -16,7 +16,9 @@
         <nav class="navbar navbar-light bg-white border-bottom">
             <div class="container-fluid">
                 {{-- Logo --}}
-                <span class="navbar-brand fw-semibold">BoxCenter</span>
+                <a class="navbar-brand" href="#">
+                    <img src="{{ asset('images/logo1-legion.jpeg') }}" alt="BoxCenter" style="height: 40px;">
+                </a>
 
                 {{-- Botón de cerrar sesión --}}
                 <form method="POST" action="{{ route('logout') }}" class="d-inline">

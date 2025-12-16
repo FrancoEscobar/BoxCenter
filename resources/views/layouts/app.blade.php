@@ -22,7 +22,7 @@
 
     <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm px-4 fixed-top">
         <a class="navbar-brand fw-bold" href="{{ auth()->check() ? route('dashboard') : url('/') }}">
-            BoxCenter
+            <img src="{{ asset('images/logo1-legion.jpeg') }}" alt="BoxCenter" style="height: 40px;">
         </a>
 
         <div class="ms-auto">

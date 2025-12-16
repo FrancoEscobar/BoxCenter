@@ -2,7 +2,7 @@
     <h2 class="mb-3 mb-md-4 text-center fs-4 fs-md-2">Selecciona tu plan</h2>
 
     <p class="text-center text-muted mb-3 mb-md-5 small">
-        Bienvenido/a a <strong>BoxCenter</strong>. Elegí el tipo de entrenamiento y el plan que mejor se adapten a tus objetivos.
+        Bienvenido/a a <strong>Legión Box</strong>. Elegí el tipo de entrenamiento y el plan que mejor se adapten a tus objetivos.
         Recordá que podrás modificar tu membresía en cualquier momento desde tu panel de usuario.
     </p>
 
