@@ -20,7 +20,12 @@ class Membresia extends Model
         'importe',
     ];
 
-        public function plan()
+    public function usuario()
+    {
+        return $this->belongsTo(User::class, 'usuario_id');
+    }
+
+    public function plan()
     {
         return $this->belongsTo(Plan::class);
     }

@@ -3,21 +3,30 @@
      @abrir-modal.window="mostrarModal = true"
      @cerrar-modal.window="mostrarModal = false">
 
-    {{-- Pestañas estilo Chrome --}}
-    <div class="chrome-tabs-container">
-        <button wire:click="cambiarVista('mis-clases')" class="chrome-tab {{ $vistaActiva === 'mis-clases' ? 'active' : '' }}">
-            <span>Próximas</span>
-        </button>
-        <button wire:click="cambiarVista('historial')" class="chrome-tab {{ $vistaActiva === 'historial' ? 'active' : '' }}">
-            <span>Historial</span>
-        </button>
-        <button wire:click="cambiarVista('miembros')" class="chrome-tab {{ $vistaActiva === 'miembros' ? 'active' : '' }}">
-            <span>Miembros</span>
-        </button>
+    {{-- Pestañas --}}
+    <div class="mb-3">
+        <div class="btn-group w-100" role="group">
+            <button wire:click="cambiarVista('mis-clases')" 
+                    class="btn {{ $vistaActiva === 'mis-clases' ? 'btn-primary' : 'btn-outline-primary' }}">
+                Próximas
+            </button>
+            <button wire:click="cambiarVista('historial')" 
+                    class="btn {{ $vistaActiva === 'historial' ? 'btn-primary' : 'btn-outline-primary' }}">
+                Historial
+            </button>
+            <button wire:click="cambiarVista('miembros')" 
+                    class="btn {{ $vistaActiva === 'miembros' ? 'btn-primary' : 'btn-outline-primary' }}">
+                Miembros
+            </button>
+            <button wire:click="cambiarVista('pagos')" 
+                    class="btn {{ $vistaActiva === 'pagos' ? 'btn-primary' : 'btn-outline-primary' }}">
+                Pagos
+            </button>
+        </div>
     </div>
 
     {{-- Contenido con fondo blanco --}}
-    <div class="content-container bg-white rounded-bottom shadow-sm p-3">
+    <div class="bg-white rounded shadow-sm p-3">
         @if($vistaActiva === 'mis-clases')
             {{-- Vista de Mis Clases --}}
             {{-- Tabs de días --}}
@@ -246,7 +255,7 @@
             @endforelse
         </div>
         @endif
-        @else
+        @elseif($vistaActiva === 'miembros')
             {{-- Vista de Miembros --}}
             {{-- Filtros de miembros --}}
             <div class="d-flex gap-2 mb-3 overflow-auto">
@@ -310,6 +319,116 @@
                     </div>
                 @endforelse
             </div>
+        @elseif($vistaActiva === 'pagos')
+            {{-- Vista de Historial de Pagos --}}
+            <div class="mb-3">
+                <h5 class="mb-3 fw-bold">
+                    <i class="bi bi-cash-coin me-2"></i>Historial de Pagos
+                </h5>
+            </div>
+
+            {{-- Filtros de pagos --}}
+            <div class="row g-2 mb-3">
+                <div class="col-3">
+                    <button 
+                        wire:click="cambiarFiltroPagos('todos')"
+                        class="day-tab w-100 {{ $filtroPagos === 'todos' ? 'active' : '' }}"
+                        style="font-size: 0.85rem; padding: 8px 4px;">
+                        Todos
+                    </button>
+                </div>
+                <div class="col-3">
+                    <button 
+                        wire:click="cambiarFiltroPagos('aprobados')"
+                        class="day-tab w-100 {{ $filtroPagos === 'aprobados' ? 'active' : '' }}"
+                        style="font-size: 0.85rem; padding: 8px 4px;">
+                        Aprobados
+                    </button>
+                </div>
+                <div class="col-3">
+                    <button 
+                        wire:click="cambiarFiltroPagos('pendientes')"
+                        class="day-tab w-100 {{ $filtroPagos === 'pendientes' ? 'active' : '' }}"
+                        style="font-size: 0.85rem; padding: 8px 4px;">
+                        Pendientes
+                    </button>
+                </div>
+                <div class="col-3">
+                    <button 
+                        wire:click="cambiarFiltroPagos('rechazados')"
+                        class="day-tab w-100 {{ $filtroPagos === 'rechazados' ? 'active' : '' }}"
+                        style="font-size: 0.85rem; padding: 8px 4px;">
+                        Rechazados
+                    </button>
+                </div>
+            </div>
+
+            {{-- Barra de búsqueda --}}
+            <div class="mb-3">
+                <div class="position-relative">
+                    <input 
+                        type="text" 
+                        wire:model.live.debounce.300ms="busquedaPagos"
+                        class="form-control ps-5" 
+                        placeholder="Buscar por nombre o email..."
+                        style="border-radius: 20px; background: #f0f2f5; border: none;">
+                    <i class="bi bi-search position-absolute" style="left: 1rem; top: 50%; transform: translateY(-50%); color: #6c757d;"></i>
+                </div>
+            </div>
+
+            {{-- Tarjetas de pagos --}}
+            <div class="pagos-container">
+                @forelse ($pagos as $pago)
+                    <div class="pago-card">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1 fw-bold">{{ $pago['usuario_nombre'] }} {{ $pago['usuario_apellido'] }}</h6>
+                                <p class="mb-0 text-muted small">{{ $pago['usuario_email'] }}</p>
+                            </div>
+                            <div class="text-end">
+                                @if($pago['status'] === 'approved')
+                                    <span class="badge bg-success mb-1">Aprobado</span>
+                                @elseif($pago['status'] === 'pending')
+                                    <span class="badge bg-warning mb-1">Pendiente</span>
+                                @elseif($pago['status'] === 'rejected')
+                                    <span class="badge bg-danger mb-1">Rechazado</span>
+                                @else
+                                    <span class="badge bg-secondary mb-1">{{ $pago['status'] }}</span>
+                                @endif
+                            </div>
+                        </div>
+                        
+                        <div class="row g-2 mb-2">
+                            <div class="col-6">
+                                <div class="d-flex align-items-center gap-1">
+                                    <i class="bi bi-calendar3 text-muted small"></i>
+                                    <small class="text-muted">{{ Carbon\Carbon::parse($pago['fecha'])->format('d/m/Y') }}</small>
+                                </div>
+                            </div>
+                            <div class="col-6 text-end">
+                                <span class="fw-bold text-success fs-5">${{ number_format($pago['importe'], 0, ',', '.') }}</span>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2 mb-2">
+                            <span class="badge bg-primary">{{ $pago['plan'] }}</span>
+                            <span class="badge bg-info">{{ $pago['tipo_entrenamiento'] }}</span>
+                        </div>
+
+                        @if($pago['fecha_aprobacion'] !== 'N/A')
+                            <div class="d-flex align-items-center gap-1">
+                                <i class="bi bi-check-circle text-success small"></i>
+                                <small class="text-muted">Aprobado: {{ $pago['fecha_aprobacion'] }}</small>
+                            </div>
+                        @endif
+                    </div>
+                @empty
+                    <div class="text-center py-5">
+                        <i class="bi bi-receipt fs-1 text-muted mb-3"></i>
+                        <p class="text-muted">No hay pagos registrados</p>
+                    </div>
+                @endforelse
+            </div>
         @endif
     </div>{{-- Cierre de content-container --}}
 
@@ -336,16 +455,6 @@
             color: white !important;
         }
         
-        /* Pestañas estilo Chrome */
-        .chrome-tabs-container {
-            display: flex;
-            gap: 3px;
-            align-items: flex-end;
-            margin-bottom: -1px;
-            position: relative;
-            z-index: 2;
-        }
-
         /* Botón flotante (FAB) extendido */
         .fab-button {
             position: fixed;
@@ -386,64 +495,6 @@
 
         .fab-button i {
             font-size: 1.25rem;
-        }
-
-        .chrome-tab {
-            position: relative;
-            background: transparent;
-            border: none;
-            padding: 0.375rem 0.75rem;
-            border-radius: 6px 6px 0 0;
-            font-weight: 500;
-            font-size: 0.875rem;
-            color: #5f6368;
-            cursor: pointer;
-            margin-bottom: 0;
-            white-space: nowrap;
-            box-shadow: none;
-        }
-
-        .chrome-tab:hover:not(.active) {
-            background: rgba(255, 255, 255, 0.5);
-        }
-
-        .chrome-tab.active {
-            background: white;
-            color: #202124;
-            font-weight: 600;
-            box-shadow: none;
-            z-index: 3;
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            border-bottom: 1px solid white;
-        }
-
-        .content-container {
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            border-radius: 0 6px 6px 6px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .chrome-tab span {
-            position: relative;
-            z-index: 1;
-        }
-
-        /* Efecto de separación entre pestañas */
-        .chrome-tab::before {
-            content: '';
-            position: absolute;
-            left: -1px;
-            top: 25%;
-            height: 50%;
-            width: 1px;
-            background: rgba(0, 0, 0, 0.1);
-        }
-
-        .chrome-tab:first-child::before,
-        .chrome-tab.active::before,
-        .chrome-tab.active + .chrome-tab::before {
-            display: none;
         }
 
         .day-selector {
@@ -665,6 +716,49 @@
             background: #555;
         }
 
+        /* Contenedor de pagos */
+        .pagos-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            max-height: 600px;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        .pagos-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .pagos-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .pagos-container::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+
+        .pagos-container::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* Tarjeta de pago */
+        .pago-card {
+            background: white;
+            border: 1px solid #e1e5eb;
+            border-radius: 8px;
+            padding: 1rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .pago-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
         .miembro-card {
             background: white;
             border: 1px solid #e1e5eb;
@@ -701,16 +795,42 @@
 
         @media (max-width: 768px) {
             .calendar-mensual-day {
-                min-height: 70px;
-                padding: 0.2rem;
+                min-height: 50px;
+                padding: 0.15rem;
             }
 
-            .calendar-mensual-day .class-type {
+            .calendar-mensual-day .day-number {
+                font-size: 0.65rem;
+                margin-bottom: 0.1rem;
+            }
+
+            .calendar-mensual-day .class-item {
+                font-size: 0.55rem;
+                padding: 1px 2px;
+                gap: 2px;
+            }
+
+            .calendar-mensual-day .class-time {
                 display: none;
             }
 
+            .calendar-mensual-day .class-type {
+                font-size: 0.6rem;
+            }
+
+            .calendar-mensual-day .more-classes {
+                font-size: 0.55rem;
+                padding: 1px;
+            }
+
+            .calendar-mensual-day-name {
+                padding: 0.3rem;
+                font-size: 0.65rem;
+            }
+
             .clases-container,
-            .miembros-container {
+            .miembros-container,
+            .pagos-container {
                 max-height: 400px;
             }
         }

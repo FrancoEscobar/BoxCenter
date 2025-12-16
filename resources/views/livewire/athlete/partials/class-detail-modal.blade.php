@@ -79,6 +79,43 @@
                         </div>
                     </div>
                     @endif
+
+                    {{-- WOD Section --}}
+                    @if(isset($claseSeleccionada->wod) && $claseSeleccionada->wod)
+                        <div class="border-top pt-3 mt-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="fw-bold mb-0"><i class="bi bi-card-list text-primary me-2"></i>Rutina: {{ $claseSeleccionada->wod->nombre }}</h6>
+                            </div>
+                            <small class="text-muted d-block mb-2"><i class="bi bi-stopwatch me-1"></i>Duración: <strong>{{ $claseSeleccionada->wod->duracion ?? '-' }} min</strong></small>
+                            <p class="small text-muted border-start border-primary ps-2 mb-3">{{ $claseSeleccionada->wod->descripcion }}</p>
+
+                            @if($claseSeleccionada->wod->ejercicios && $claseSeleccionada->wod->ejercicios->count() > 0)
+                                <h6 class="fw-bold small mt-2 mb-2">Ejercicios:</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-sm small table-striped">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th style="width: 5%">#</th>
+                                                <th style="width: 45%">Ejercicio</th>
+                                                <th style="width: 30%">Series x Reps</th>
+                                                <th style="width: 20%">Tiempo</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach ($claseSeleccionada->wod->ejercicios as $ejercicio)
+                                                <tr>
+                                                    <td>{{ $ejercicio->pivot->orden }}</td>
+                                                    <td>{{ $ejercicio->nombre }}</td>
+                                                    <td><strong>{{ $ejercicio->pivot->series }}</strong> x <strong>{{ $ejercicio->pivot->repeticiones }}</strong></td>
+                                                    <td>{{ $ejercicio->pivot->duracion ? $ejercicio->pivot->duracion.'s' : '-' }}</td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            @endif
+                        </div>
+                    @endif
                 </div>
 
                 {{-- Footer --}}

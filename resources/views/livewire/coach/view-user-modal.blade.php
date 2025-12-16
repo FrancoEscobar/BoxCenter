@@ -61,6 +61,10 @@
                                         <span class="info-value">{{ $membresia->plan->nombre ?? 'N/A' }}</span>
                                     </div>
                                     <div class="info-item">
+                                        <span class="info-label">Tipo de entrenamiento</span>
+                                        <span class="info-value">{{ $membresia->tipoEntrenamiento->nombre ?? 'N/A' }}</span>
+                                    </div>
+                                    <div class="info-item">
                                         <span class="info-label">Fecha de inicio</span>
                                         <span class="info-value">{{ Carbon\Carbon::parse($membresia->fecha_inicio)->format('d/m/Y') }}</span>
                                     </div>
@@ -94,6 +98,37 @@
                             <div class="stat-card">
                                 <div class="stat-value text-truncate" style="font-size: 0.9rem;">{{ $estadisticas['ultima_asistencia'] ?? 'Nunca' }}</div>
                                 <div class="stat-label">Última asistencia</div>
+                            </div>
+                        </div>
+                    </div>
+                @elseif($usuario->role->nombre === 'coach')
+                    {{-- Estadísticas de Coach --}}
+                    <div class="info-section">
+                        <h6 class="section-title"><i class="bi bi-graph-up me-2"></i>Desempeño</h6>
+                        <div class="stats-grid">
+                            <div class="stat-card stat-coach">
+                                <div class="stat-value">{{ $estadisticas['total_clases'] ?? 0 }}</div>
+                                <div class="stat-label">Clases impartidas</div>
+                            </div>
+                            <div class="stat-card stat-coach">
+                                <div class="stat-value">{{ $estadisticas['clases_mes'] ?? 0 }}</div>
+                                <div class="stat-label">Este mes</div>
+                            </div>
+                            <div class="stat-card stat-coach">
+                                <div class="stat-value">{{ $estadisticas['atletas_unicos'] ?? 0 }}</div>
+                                <div class="stat-label">Atletas únicos</div>
+                            </div>
+                            <div class="stat-card stat-coach">
+                                <div class="stat-value">{{ $estadisticas['promedio_asistencia'] ?? 0 }}%</div>
+                                <div class="stat-label">% Asistencia</div>
+                            </div>
+                            <div class="stat-card stat-coach">
+                                <div class="stat-value">{{ $estadisticas['clases_canceladas'] ?? 0 }}</div>
+                                <div class="stat-label">Clases canceladas</div>
+                            </div>
+                            <div class="stat-card stat-coach">
+                                <div class="stat-value text-truncate" style="font-size: 0.8rem;">{{ $estadisticas['proxima_clase'] ?? 'N/A' }}</div>
+                                <div class="stat-label">Próxima clase</div>
                             </div>
                         </div>
                     </div>
@@ -241,6 +276,35 @@
 
         .stat-card:nth-child(4) {
             background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+
+        /* Estilos específicos para estadísticas de coaches */
+        .stat-coach {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .stat-coach:nth-child(1) {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .stat-coach:nth-child(2) {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .stat-coach:nth-child(3) {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .stat-coach:nth-child(4) {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+
+        .stat-coach:nth-child(5) {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+
+        .stat-coach:nth-child(6) {
+            background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
         }
 
         .stat-value {

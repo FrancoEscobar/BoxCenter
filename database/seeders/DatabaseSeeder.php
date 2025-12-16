@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
             PlanSeeder::class,
             MetodosPagoSeeder::class,
             MembresiaSeeder::class,
+            PagoSeeder::class,
             ClaseSeeder::class,
             EjercicioSeeder::class,
             WodSeeder::class,

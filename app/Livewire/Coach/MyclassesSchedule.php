@@ -5,6 +5,7 @@ namespace App\Livewire\Coach;
 use Livewire\Component;
 use Carbon\Carbon;
 use App\Models\Clase;
+use App\Models\Pago;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\On;
 
@@ -15,10 +16,13 @@ class MyclassesSchedule extends Component
     public $clasesDelDia = [];
     public $clasesHistorial = [];
     public $claseSeleccionada = null;
-    public $vistaActiva = 'mis-clases'; // 'mis-clases' o 'historial' o 'miembros'
+    public $vistaActiva = 'mis-clases'; // 'mis-clases' o 'historial' o 'miembros' o 'pagos'
     public $miembros = [];
     public $filtroMiembros = 'todos'; // 'todos', 'coaches', 'atletas'
     public $busquedaMiembros = '';
+    public $pagos = [];
+    public $filtroPagos = 'todos'; // 'todos', 'aprobados', 'pendientes', 'rechazados'
+    public $busquedaPagos = '';
     public $mostrarCalendarioMensual = false;
     public $mesActual;
     public $anioActual;
@@ -71,6 +75,8 @@ class MyclassesSchedule extends Component
             $this->cargarHistorial();
         } elseif ($vista === 'miembros') {
             $this->cargarMiembros();
+        } elseif ($vista === 'pagos') {
+            $this->cargarPagos();
         }
     }
 
@@ -185,6 +191,17 @@ class MyclassesSchedule extends Component
     public function updatedBusquedaMiembros()
     {
         $this->cargarMiembros();
+    }
+
+    public function cambiarFiltroPagos($filtro)
+    {
+        $this->filtroPagos = $filtro;
+        $this->cargarPagos();
+    }
+
+    public function updatedBusquedaPagos()
+    {
+        $this->cargarPagos();
     }
 
     public function abrirUsuario($userId)
@@ -489,7 +506,52 @@ class MyclassesSchedule extends Component
         })->toArray();
     }
 
+    public function cargarPagos()
+    {
+        $query = Pago::whereHas('membresia', function($query) {
+                // Solo pagos de membresías del gimnasio (todos los usuarios)
+            })
+            ->with(['membresia.usuario', 'membresia.plan', 'membresia.tipoEntrenamiento']);
 
+        // Aplicar filtro por estado
+        if ($this->filtroPagos === 'aprobados') {
+            $query->where('status', 'approved');
+        } elseif ($this->filtroPagos === 'pendientes') {
+            $query->where('status', 'pending');
+        } elseif ($this->filtroPagos === 'rechazados') {
+            $query->where('status', 'rejected');
+        }
+
+        $pagos = $query->orderBy('fecha', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Aplicar búsqueda por nombre o email
+        if ($this->busquedaPagos) {
+            $busqueda = strtolower($this->busquedaPagos);
+            $pagos = $pagos->filter(function($pago) use ($busqueda) {
+                $nombreCompleto = strtolower(($pago->membresia->usuario->name ?? '') . ' ' . ($pago->membresia->usuario->apellido ?? ''));
+                $email = strtolower($pago->membresia->usuario->email ?? '');
+                return str_contains($nombreCompleto, $busqueda) || str_contains($email, $busqueda);
+            });
+        }
+
+        $this->pagos = $pagos->map(function($pago) {
+            return [
+                'id' => $pago->id,
+                'fecha' => $pago->fecha,
+                'usuario_nombre' => $pago->membresia->usuario->name ?? 'N/A',
+                'usuario_apellido' => $pago->membresia->usuario->apellido ?? '',
+                'usuario_email' => $pago->membresia->usuario->email ?? 'N/A',
+                'plan' => $pago->membresia->plan->nombre ?? 'N/A',
+                'tipo_entrenamiento' => $pago->membresia->tipoEntrenamiento->nombre ?? 'N/A',
+                'importe' => $pago->importe,
+                'status' => $pago->status ?? 'N/A',
+                'payment_id' => $pago->payment_id,
+                'fecha_aprobacion' => $pago->date_approved ? Carbon::parse($pago->date_approved)->format('d/m/Y H:i') : 'N/A',
+            ];
+        })->toArray();
+    }
 
     public function render()
     {
