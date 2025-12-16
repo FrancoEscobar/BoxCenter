@@ -3,32 +3,38 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ config('app.name', 'BoxCenter') }}</title>
+    <title>@yield('title', config('app.name', 'BoxCenter'))</title>
 
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    
+    @livewireStyles
 </head>
-<body class="font-sans antialiased bg-gray-100">
-    <div class="min-h-screen">
+<body style="background-color: #f8f9fa;">
+    <div style="min-height: 100vh;">
         {{-- Header --}}
-        <nav class="bg-white border-b border-gray-200">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <nav class="navbar navbar-light bg-white border-bottom">
+            <div class="container-fluid">
                 {{-- Logo --}}
-                <span class="text-lg font-semibold text-gray-800 leading-tight">BoxCenter</span>
+                <span class="navbar-brand fw-semibold">BoxCenter</span>
 
                 {{-- Botón de cerrar sesión --}}
-                <form method="POST" action="{{ route('logout') }}">
+                <form method="POST" action="{{ route('logout') }}" class="d-inline">
                     @csrf
-                    <button type="submit" class="bg-red-600 hover:bg-red-700 text-white text-sm font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 transition">
-                        {{ __('Cerrar sesión') }}
+                    <button type="submit" class="btn btn-danger btn-sm">
+                        Cerrar sesión
                     </button>
                 </form>
             </div>
         </nav>
 
         {{-- Contenido principal --}}
-        <main class="py-12">
+        <main class="py-4">
             @yield('content')
         </main>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    @livewireScripts
 </body>
 </html>
