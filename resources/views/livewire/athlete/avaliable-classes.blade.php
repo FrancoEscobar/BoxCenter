@@ -297,13 +297,6 @@
                                         <span class="badge bg-danger">Vencida</span>
                                     @endif
                                 </div>
-
-                                @if($esActiva && $fechaFin->diffInDays($hoy) <= 7)
-                                    <div class="alert alert-warning small mb-0">
-                                        <i class="bi bi-exclamation-triangle me-1"></i>
-                                        Tu membresía vence en {{ $fechaFin->diffInDays($hoy) }} días
-                                    </div>
-                                @endif
                             </div>
                         </div>
                     </div>
