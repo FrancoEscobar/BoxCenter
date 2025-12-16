@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Broadcast;
 
 Route::get('/', function () {
     return view('welcome');
-});
+})->name('welcome');
 
 // Broadcasting auth routes
 Broadcast::routes(['middleware' => ['web', 'auth']]);
