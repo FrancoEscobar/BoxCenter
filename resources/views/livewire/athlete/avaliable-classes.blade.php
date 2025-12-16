@@ -277,8 +277,8 @@
 
                                 <div class="mb-3">
                                     <small class="text-muted d-block">Fecha de Vencimiento</small>
-                                    <strong class="{{ \Carbon\Carbon::parse($membresia->fecha_fin)->isPast() ? 'text-danger' : 'text-success' }}">
-                                        {{ \Carbon\Carbon::parse($membresia->fecha_fin)->format('d/m/Y') }}
+                                    <strong class="{{ \Carbon\Carbon::parse($membresia->fecha_vencimiento)->isPast() ? 'text-danger' : 'text-success' }}">
+                                        {{ \Carbon\Carbon::parse($membresia->fecha_vencimiento)->format('d/m/Y') }}
                                     </strong>
                                 </div>
 
@@ -286,7 +286,7 @@
                                     <small class="text-muted d-block">Estado</small>
                                     @php
                                         $hoy = \Carbon\Carbon::now();
-                                        $fechaFin = \Carbon\Carbon::parse($membresia->fecha_fin);
+                                        $fechaFin = \Carbon\Carbon::parse($membresia->fecha_vencimiento);
                                         $esActiva = $membresia->estado === 'activa' && $fechaFin->isFuture();
                                     @endphp
                                     @if($esActiva)
